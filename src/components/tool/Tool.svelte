@@ -2,6 +2,8 @@
 	import * as tf from "@tensorflow/tfjs";
 	import { arrayToTensor, logMemory, tensorToArray } from "./tool";
 	import { onMount } from "svelte";
+	import Plot3D from "../projections/Plot3D.svelte";
+	import { mode } from "d3-array";
 
 	export let dataset: dataType;
 	let tensorDataset: tf.Tensor;
@@ -42,17 +44,17 @@
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let outputLoss: number = 0;
 	let epoch: number = 0;
+	let preds: number[] = [];
 	onMount(async () => {
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
 		// define model
-		const model = new Autoencoder("tanh");
+		const model = new Autoencoder("sigmoid");
 		// define loss
 		const loss = tf.losses.meanSquaredError;
 		// define optimizer
 		const lr = 0.1;
 		const optim = tf.train.adam(lr);
-
 		function forwardBackward() {
 			return optim.minimize(
 				// @ts-ignore
@@ -61,7 +63,7 @@
 			);
 		}
 		let avg = 0;
-		const epochs = 500;
+		const epochs = 1000;
 		for (let i = 0; i < epochs; i++) {
 			const start = performance.now();
 			const out = forwardBackward();
@@ -69,15 +71,19 @@
 				outputLoss = out.dataSync()[0];
 			}
 			epoch = i;
+			tf.tidy(() => {
+				const output = model.predict(tensorDataset);
+				// @ts-ignore
+				preds = tensorToArray(output);
+			});
+			// @ts-ignore
 			await timer(0);
 			out.dispose();
 			const stop = performance.now();
 			avg += stop - start;
 		}
-
 		console.log(avg / epochs);
 		logMemory();
-		// create the tensorflow model
 	});
 
 	function clearGlobalMemory() {
@@ -90,8 +96,24 @@
 	}
 </script>
 
-<div>Loss: {outputLoss}</div>
-<div>Epoch: {epoch}</div>
+<!-- <div>Loss: {outputLoss}</div>
+<div>Epoch: {epoch}</div> -->
+<div class="container">
+	<Plot3D
+		data3D={preds}
+		on:hover={(e) => {}}
+		hoveredPointIndex={-1}
+		title={"Input Data"}
+		axesVisible
+		style="border: 3px coral solid; border-radius: 5px;"
+		colors={[]}
+	/>
+</div>
 
 <style lang="scss">
+	.container {
+		// width: 300px;
+		// height: 100px;
+		// color: rgba(0, 0, 0, 0.81);
+	}
 </style>
