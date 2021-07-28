@@ -6,7 +6,7 @@
 		beforeUpdate,
 	} from "svelte";
 	import { schemeCategory10 } from "d3";
-	import { ScatterGL } from "scatter-gl";
+	import { Point3D, ScatterGL } from "camerahelperscattergl";
 	export let data3D;
 
 	// config
@@ -54,7 +54,7 @@
 			},
 			selectEnabled: false,
 			rotateOnStart: false,
-			onCameraMove: (pos, target) => {
+			onCameraDrag: (pos, target) => {
 				dispatch("drag", { position: pos });
 				if (isOrbiting) isOrbiting = false;
 			},
@@ -72,6 +72,7 @@
 		scatterGL.render(dataset);
 		mounted = true;
 	});
+	const origin: Point3D = [0, 0, 0];
 	$: {
 		if (mounted) {
 			const dataset = {
@@ -85,18 +86,18 @@
 	}
 	$: {
 		if (mounted) {
-			scatterGL.setCamera(pos);
+			scatterGL.setCameraPositionAndTarget(pos, origin);
 		}
 	}
-	afterUpdate(() => {
-		const dataset = {
-			dimensions: 3,
-			points: data3D,
-			metadata: [],
-		};
-		//@ts-ignore
-		// scatterGL.scatter
-	});
+	// afterUpdate(() => {
+	// 	const dataset = {
+	// 		dimensions: 3,
+	// 		points: data3D,
+	// 		metadata: [],
+	// 	};
+	// 	//@ts-ignore
+	// 	// scatterGL.scatter
+	// });
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -109,11 +110,11 @@
 		<div class="title">{title}</div>
 	{/if}
 	<div class="scatter-gl-container" bind:this={container} />
-	{#if !isOrbiting}
+	<!-- {#if !isOrbiting}
 		<div class="orbit" on:click={toggleOrbit}>
 			<i class="material-icons">3d_rotation</i>
 		</div>
-	{/if}
+	{/if} -->
 </div>
 
 <style>

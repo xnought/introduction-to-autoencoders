@@ -4,7 +4,6 @@
 	import { onMount } from "svelte";
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Plot2D from "../projections/Plot2D.svelte";
-	import { xlink_attr } from "svelte/internal";
 
 	export let dataset: dataType;
 	let tensorDataset: tf.Tensor;
@@ -127,9 +126,11 @@
 			const { x, y, z } = e.detail.position;
 			pos = [x, y, z];
 		}}
+		width="200px"
+		height="200px"
 		hoveredPointIndex={-1}
 		title={"Inputs"}
-		axesVisible
+		axesVisible={false}
 		style="border: 3px violet solid; border-radius: 5px;"
 		colors={["#000000"]}
 		{pos}
@@ -141,6 +142,24 @@
 			const { x, y, z } = e.detail.position;
 			pos = [x, y, z];
 		}}
+		width="200px"
+		height="200px"
+		hoveredPointIndex={-1}
+		title={"Reconstructed Inputs"}
+		axesVisible={false}
+		style="border: 3px coral solid; border-radius: 5px;"
+		colors={[]}
+		{pos}
+	/>
+	<Plot3D
+		data3D={[...dataset, ...preds]}
+		on:hover={(e) => {}}
+		on:drag={(e) => {
+			const { x, y, z } = e.detail.position;
+			pos = [x, y, z];
+		}}
+		width="400px"
+		height="400px"
 		hoveredPointIndex={-1}
 		title={"Reconstructed Inputs"}
 		axesVisible
