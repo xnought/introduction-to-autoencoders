@@ -52,6 +52,7 @@
 	onMount(async () => {
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
+		console.log(dataset.length);
 		// define model
 		const model = new Autoencoder("tanh");
 		model.summary();
@@ -153,6 +154,7 @@
 	/>
 	<Plot3D
 		data3D={[...dataset, ...preds]}
+		lenData={dataset.length}
 		on:hover={(e) => {}}
 		on:drag={(e) => {
 			const { x, y, z } = e.detail.position;
@@ -164,7 +166,7 @@
 		title={"Reconstructed Inputs"}
 		axesVisible
 		style="border: 3px coral solid; border-radius: 5px;"
-		colors={[]}
+		colors={["#000000"]}
 		{pos}
 	/>
 	<Plot2D

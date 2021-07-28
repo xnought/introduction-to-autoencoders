@@ -11,6 +11,7 @@
 
 	// config
 	export let colors = schemeCategory10.slice(0, 2);
+	export let lenData = 156;
 	export let width = "250px";
 	export let height = "250px";
 	export let zoom = 0.9;
@@ -66,7 +67,7 @@
 		window["scatterGLObj"] = scatterGL;
 		scatterGL.setPointColorer((i) => {
 			// const colorIndex = colorIndices[i];
-			return colors[0];
+			return i < lenData ? colors[0] : colors[1];
 		});
 		//@ts-ignore
 		scatterGL.render(dataset);
@@ -106,9 +107,9 @@
 	on:mouseout={handleMouseout}
 	style="width: {width}; height: {height};{style}"
 >
-	{#if title}
+	<!-- {#if title}
 		<div class="title">{title}</div>
-	{/if}
+	{/if} -->
 	<div class="scatter-gl-container" bind:this={container} />
 	<!-- {#if !isOrbiting}
 		<div class="orbit" on:click={toggleOrbit}>
