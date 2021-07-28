@@ -3,7 +3,7 @@
 	import { arrayToTensor, logMemory, tensorToArray } from "./tool";
 	import { onMount } from "svelte";
 	import Plot3D from "../projections/Plot3D.svelte";
-	import { mode } from "d3-array";
+	import Plot2D from "../projections/Plot2D.svelte";
 
 	export let dataset: dataType;
 	let tensorDataset: tf.Tensor;
@@ -45,15 +45,20 @@
 	let outputLoss: number = 0;
 	let epoch: number = 0;
 	let preds: number[] = [];
+	let latent: number[][] = [];
+	let min: number[] = [];
+	let max: number[] = [];
+
 	onMount(async () => {
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
 		// define model
-		const model = new Autoencoder("sigmoid");
+		const model = new Autoencoder("tanh");
+		model.summary();
 		// define loss
 		const loss = tf.losses.meanSquaredError;
 		// define optimizer
-		const lr = 0.1;
+		const lr = 0.01;
 		const optim = tf.train.adam(lr);
 		function forwardBackward() {
 			return optim.minimize(
@@ -72,9 +77,21 @@
 			}
 			epoch = i;
 			tf.tidy(() => {
-				const output = model.predict(tensorDataset);
 				// @ts-ignore
-				preds = tensorToArray(output);
+				const encoded: tf.Tensor = model.encoder.predict(tensorDataset);
+				// @ts-ignore
+				const decoded: tf.Tensor = model.decoder.predict(encoded);
+
+				// @ts-ignore
+				latent = tensorToArray(encoded);
+				// @ts-ignore
+				preds = tensorToArray(decoded);
+				// @ts-ignore
+
+				const maxTensor = tf.max(encoded, 0);
+				const minTensor = tf.min(encoded, 0);
+				max = tensorToArray(maxTensor);
+				min = tensorToArray(minTensor);
 			});
 			// @ts-ignore
 			await timer(0);
@@ -108,6 +125,7 @@
 		style="border: 3px coral solid; border-radius: 5px;"
 		colors={[]}
 	/>
+	<Plot2D data2D={latent} {min} {max} />
 </div>
 
 <style lang="scss">
