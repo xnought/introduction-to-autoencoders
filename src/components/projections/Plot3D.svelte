@@ -33,17 +33,16 @@
 		isOrbiting = true;
 		scatterGL.startOrbitAnimation();
 	};
+	export let pos: [number, number, number] = [0.45, 0.9, 1.6];
+	let mounted = false;
 	onMount(async () => {
 		const dataset = {
 			dimensions: 3,
 			points: data3D,
 			metadata: [],
 		};
-		const onCameraMove = () => {
-			if (isOrbiting) isOrbiting = false;
-		};
 		scatterGL = new ScatterGL(container, {
-			camera: { zoom },
+			camera: { zoom, position: pos },
 			styles: {
 				fog: { enabled: false },
 				point: {
@@ -55,7 +54,10 @@
 			},
 			selectEnabled: false,
 			rotateOnStart: false,
-			onCameraMove,
+			onCameraMove: (pos, target) => {
+				dispatch("drag", { position: pos });
+				if (isOrbiting) isOrbiting = false;
+			},
 			onHover: (d) => {
 				if (d === null || d === hoveredPointIndex) return;
 				dispatch("hover", d);
@@ -68,7 +70,24 @@
 		});
 		//@ts-ignore
 		scatterGL.render(dataset);
+		mounted = true;
 	});
+	$: {
+		if (mounted) {
+			const dataset = {
+				dimensions: 3,
+				points: data3D,
+				metadata: [],
+			};
+			scatterGL.updateDataset(dataset);
+			scatterGL.setHoverPointIndex(hoveredPointIndex);
+		}
+	}
+	$: {
+		if (mounted) {
+			scatterGL.setCamera(pos);
+		}
+	}
 	afterUpdate(() => {
 		const dataset = {
 			dimensions: 3,
@@ -76,9 +95,7 @@
 			metadata: [],
 		};
 		//@ts-ignore
-		scatterGL.updateDataset(dataset);
-		// debugger
-		scatterGL.setHoverPointIndex(hoveredPointIndex);
+		// scatterGL.scatter
 	});
 </script>
 
