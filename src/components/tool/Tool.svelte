@@ -9,7 +9,7 @@
 	class Autoencoder {
 		encoder: tf.Sequential;
 		decoder: tf.Sequential;
-		constructor(activation: any) {
+		constructor(activation: ActivationIdentifier) {
 			this.encoder = tf.sequential({
 				layers: [
 					tf.layers.dense({ units: 2, inputShape: [3], activation }),
@@ -46,7 +46,7 @@
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
 		// define model
-		const model = new Autoencoder("sigmoid");
+		const model = new Autoencoder("tanh");
 		// define loss
 		const loss = tf.losses.meanSquaredError;
 		// define optimizer
@@ -61,11 +61,11 @@
 			);
 		}
 		let avg = 0;
-		const epochs = 1000;
+		const epochs = 500;
 		for (let i = 0; i < epochs; i++) {
 			const start = performance.now();
 			const out = forwardBackward();
-			if (i % 100 == 0) {
+			if (i % 25 == 0) {
 				outputLoss = out.dataSync()[0];
 			}
 			epoch = i;
