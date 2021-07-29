@@ -4,6 +4,7 @@
 	import { onMount } from "svelte";
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Plot2D from "../projections/Plot2D.svelte";
+	import Model from "./Model.svelte";
 
 	class Autoencoder {
 		encoder: tf.Sequential;
@@ -132,7 +133,7 @@
 	}
 </script>
 
-<div class="container">
+<!-- <div class="container">
 	<Plot3D
 		data3D={dataset}
 		on:hover={(e) => {}}
@@ -198,7 +199,8 @@
 <button on:click={() => reset()}>Reset</button>
 <button on:click={() => (tensors = tf.memory().numTensors)}
 	>Num Tensors={tensors}</button
->
+> -->
+<Model />
 
 <style lang="scss">
 	.container {
