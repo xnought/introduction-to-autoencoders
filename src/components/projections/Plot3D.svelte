@@ -6,8 +6,8 @@
 		beforeUpdate,
 	} from "svelte";
 	import { schemeCategory10 } from "d3";
-	import { Point3D, ScatterGL } from "camerahelperscattergl";
 	export let data3D;
+	import { ScatterGL } from "camerahelperscattergl";
 
 	// config
 	export let colors = schemeCategory10.slice(0, 2);
@@ -22,7 +22,7 @@
 
 	const dispatch = createEventDispatcher();
 	let container: HTMLElement;
-	let scatterGL: ScatterGL;
+	let scatterGL;
 	// export let colorIndices;
 	export let title = "";
 	export let hoveredPointIndex = -1;
@@ -73,7 +73,7 @@
 		scatterGL.render(dataset);
 		mounted = true;
 	});
-	const origin: Point3D = [0, 0, 0];
+	const origin: [number, number, number] = [0, 0, 0];
 	$: {
 		if (mounted) {
 			const dataset = {
@@ -81,6 +81,7 @@
 				points: data3D,
 				metadata: [],
 			};
+			//@ts-expect-error
 			scatterGL.updateDataset(dataset);
 			scatterGL.setHoverPointIndex(hoveredPointIndex);
 		}
