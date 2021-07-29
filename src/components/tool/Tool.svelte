@@ -5,9 +5,6 @@
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Plot2D from "../projections/Plot2D.svelte";
 
-	export let dataset: dataType;
-	let tensorDataset: tf.Tensor;
-
 	class Autoencoder {
 		encoder: tf.Sequential;
 		decoder: tf.Sequential;
@@ -41,71 +38,85 @@
 		}
 	}
 
-	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
-	let outputLoss: number = 0;
+	// model config
+	export let dataset: dataType;
+	let model: Autoencoder;
+	let tensorDataset: tf.Tensor;
+	let loss: any;
+	let optim: any;
+	let lr: number;
 	let epoch: number = 0;
-	let preds: number[] = [];
-	let latent: number[][] = [];
-	let min: number[] = [];
-	let max: number[] = [];
+
+	// output items
+	let preds: Point3D[] = [];
+	let latent: Point2D[] = [];
+	let min: Point2D = [Infinity, Infinity];
+	let max: Point2D = [0, 0];
+	let pos: Point3D = [0.45, 0.9, 1.6];
+	let tensors = 0;
+
+	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
+	let playing = false;
+	async function play() {
+		playing = true;
+		while (playing) {
+			// compute forward, backward, update
+			tf.tidy(() => {
+				const outputLoss = oneEpoch();
+				getOuputs();
+			});
+			epoch++;
+			await timer(0);
+		}
+	}
+	function pause() {
+		playing = false;
+	}
+	function reset() {
+		model.dispose();
+		model = new Autoencoder("tanh");
+		preds = [];
+		latent = [];
+		epoch = 0;
+	}
+	function oneEpoch() {
+		return optim.minimize(
+			// @ts-ignore
+			() => loss(model.predict(tensorDataset), dataset),
+			true
+		);
+	}
+	function getOuputs() {
+		// @ts-ignore
+		const encoded: tf.Tensor = model.encoder.predict(tensorDataset);
+		// @ts-ignore
+		const decoded: tf.Tensor = model.decoder.predict(encoded);
+
+		// @ts-ignore
+		latent = tensorToArray(encoded);
+		// @ts-ignore
+		preds = tensorToArray(decoded);
+		// @ts-ignore
+
+		const maxTensor = tf.max(encoded, 0);
+		const minTensor = tf.min(encoded, 0);
+		// @ts-ignore
+		max = tensorToArray(maxTensor);
+		// @ts-ignore
+		min = tensorToArray(minTensor);
+	}
 
 	onMount(async () => {
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
-		console.log(dataset.length);
 		// define model
-		const model = new Autoencoder("tanh");
-		model.summary();
+		model = new Autoencoder("tanh");
 		// define loss
-		const loss = tf.losses.meanSquaredError;
+		loss = tf.losses.meanSquaredError;
 		// define optimizer
-		const lr = 0.01;
-		const optim = tf.train.adam(lr);
-		function forwardBackward() {
-			return optim.minimize(
-				// @ts-ignore
-				() => loss(model.predict(tensorDataset), dataset),
-				true
-			);
-		}
-		let avg = 0;
-		const epochs = 1000;
-		for (let i = 0; i < epochs; i++) {
-			const start = performance.now();
-			const out = forwardBackward();
-			if (i % 25 == 0) {
-				outputLoss = out.dataSync()[0];
-			}
-			epoch = i;
-			tf.tidy(() => {
-				// @ts-ignore
-				const encoded: tf.Tensor = model.encoder.predict(tensorDataset);
-				// @ts-ignore
-				const decoded: tf.Tensor = model.decoder.predict(encoded);
-
-				// @ts-ignore
-				latent = tensorToArray(encoded);
-				// @ts-ignore
-				preds = tensorToArray(decoded);
-				// @ts-ignore
-
-				const maxTensor = tf.max(encoded, 0);
-				const minTensor = tf.min(encoded, 0);
-				// @ts-ignore
-				max = tensorToArray(maxTensor);
-				// @ts-ignore
-				min = tensorToArray(minTensor);
-			});
-			// @ts-ignore
-			await timer(0);
-			out.dispose();
-			const stop = performance.now();
-			avg += stop - start;
-		}
-		console.log(avg / epochs);
-		logMemory();
+		lr = 0.01;
+		optim = tf.train.adam(lr);
 	});
-
 	function clearGlobalMemory() {
 		clearTensorMemory(tensorDataset);
 	}
@@ -114,11 +125,8 @@
 			tensor.dispose();
 		}
 	}
-	let pos: [number, number, number] = [0.45, 0.9, 1.6];
 </script>
 
-<!-- <div>Loss: {outputLoss}</div>
-<div>Epoch: {epoch}</div> -->
 <div class="container">
 	<Plot3D
 		data3D={dataset}
@@ -179,11 +187,15 @@
 		{max}
 	/>
 </div>
+<div>{epoch}</div>
+<button on:click={async () => await play()}>Play</button>
+<button on:click={() => pause()}>Pause</button>
+<button on:click={() => reset()}>Reset</button>
+<button on:click={() => (tensors = tf.memory().numTensors)}
+	>Num Tensors={tensors}</button
+>
 
 <style lang="scss">
 	.container {
-		// width: 300px;
-		// height: 100px;
-		// color: rgba(0, 0, 0, 0.81);
 	}
 </style>
