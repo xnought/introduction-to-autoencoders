@@ -130,7 +130,7 @@
 	}
 	.scatter-gl-container {
 		width: 100%;
-		min-height: 90%;
+		min-height: 100%;
 	}
 	/* @media only screen and (max-width: 800px) {
 		.container {

@@ -193,14 +193,22 @@
 		{max}
 	/>
 </div>
+-->
 <div>Epoch={epoch}, Loss={printLoss}</div>
 <button on:click={async () => await play()}>Play</button>
 <button on:click={() => pause()}>Pause</button>
 <button on:click={() => reset()}>Reset</button>
 <button on:click={() => (tensors = tf.memory().numTensors)}
 	>Num Tensors={tensors}</button
-> -->
-<Model />
+>
+<Model
+	inputs={dataset}
+	minLatent={min}
+	{latent}
+	maxLatent={max}
+	outputs={preds}
+	axesVisible
+/>
 
 <style lang="scss">
 	.container {
