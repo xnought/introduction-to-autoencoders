@@ -54,6 +54,7 @@
 	let max: Point2D = [0, 0];
 	let pos: Point3D = [0.45, 0.9, 1.6];
 	let tensors = 0;
+	let printLoss: number;
 
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let playing = false;
@@ -63,6 +64,7 @@
 			// compute forward, backward, update
 			tf.tidy(() => {
 				const outputLoss = oneEpoch();
+				printLoss = getScalar(outputLoss);
 				getOuputs();
 			});
 			epoch++;
@@ -119,6 +121,9 @@
 	});
 	function clearGlobalMemory() {
 		clearTensorMemory(tensorDataset);
+	}
+	function getScalar(item: tf.Scalar) {
+		return item.dataSync()[0];
 	}
 	function clearTensorMemory(tensor: tf.Tensor) {
 		if (!tensor.isDisposed) {
@@ -187,7 +192,7 @@
 		{max}
 	/>
 </div>
-<div>{epoch}</div>
+<div>Epoch={epoch}, Loss={printLoss}</div>
 <button on:click={async () => await play()}>Play</button>
 <button on:click={() => pause()}>Pause</button>
 <button on:click={() => reset()}>Reset</button>
