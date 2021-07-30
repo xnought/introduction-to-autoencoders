@@ -208,6 +208,7 @@
 	maxLatent={max}
 	outputs={preds}
 	axesVisible
+	animating={playing}
 />
 
 <style lang="scss">
