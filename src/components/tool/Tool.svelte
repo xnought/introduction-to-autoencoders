@@ -3,7 +3,6 @@
 	import { arrayToTensor, logMemory, tensorToArray } from "./tool";
 	import { onMount } from "svelte";
 	import Plot3D from "../projections/Plot3D.svelte";
-	import Plot2D from "../projections/Plot2D.svelte";
 	import Model from "./Model.svelte";
 
 	class Autoencoder {
@@ -131,87 +130,134 @@
 			tensor.dispose();
 		}
 	}
+
+	let inputColor = "hsla(0, 0%, 0%, 0.5)";
+	let latentColor = "hsla(194, 74%, 73%, 1)";
+	let outputColor = "hsla(249, 48%, 84%, 0.5)";
+	let isRunning = false;
 </script>
 
-<!-- <div class="container">
-	<Plot3D
-		data3D={dataset}
-		on:hover={(e) => {}}
-		on:drag={(e) => {
-			const { x, y, z } = e.detail.position;
-			pos = [x, y, z];
-		}}
-		width="200px"
-		height="200px"
-		hoveredPointIndex={-1}
-		title={"Inputs"}
-		axesVisible={false}
-		style="border: 3px violet solid; border-radius: 5px;"
-		colors={["#000000"]}
-		{pos}
-	/>
-	<Plot3D
-		data3D={preds}
-		on:hover={(e) => {}}
-		on:drag={(e) => {
-			const { x, y, z } = e.detail.position;
-			pos = [x, y, z];
-		}}
-		width="200px"
-		height="200px"
-		hoveredPointIndex={-1}
-		title={"Reconstructed Inputs"}
-		axesVisible={false}
-		style="border: 3px coral solid; border-radius: 5px;"
-		colors={[]}
-		{pos}
-	/>
-	<Plot3D
-		data3D={[...dataset, ...preds]}
-		lenData={dataset.length}
-		on:hover={(e) => {}}
-		on:drag={(e) => {
-			const { x, y, z } = e.detail.position;
-			pos = [x, y, z];
-		}}
-		width="400px"
-		height="400px"
-		hoveredPointIndex={-1}
-		title={"Reconstructed Inputs"}
-		axesVisible
-		style="border: 3px coral solid; border-radius: 5px;"
-		colors={["#000000"]}
-		{pos}
-	/>
-	<Plot2D
-		data2D={latent}
-		width={100}
-		height={100}
-		color="#9F9DE4"
-		radius={1}
-		{min}
-		{max}
-	/>
-</div>
--->
-<div>Epoch={epoch}, Loss={printLoss}</div>
+<!-- <div>Epoch={epoch}, Loss={printLoss}</div>
 <button on:click={async () => await play()}>Play</button>
 <button on:click={() => pause()}>Pause</button>
 <button on:click={() => reset()}>Reset</button>
 <button on:click={() => (tensors = tf.memory().numTensors)}
 	>Num Tensors={tensors}</button
->
-<Model
-	inputs={dataset}
-	minLatent={min}
-	{latent}
-	maxLatent={max}
-	outputs={preds}
-	axesVisible
-	animating={playing}
-/>
+> -->
+<div class="container">
+	<div id="model-view">
+		<div class="data-controls">
+			<div class="play-controls">
+				<button
+					class="play-pause"
+					on:click={async () => {
+						isRunning = !isRunning;
+						if (isRunning) {
+							await play();
+						} else if (!isRunning) {
+							pause();
+						}
+					}}
+				>
+					{#if isRunning}
+						<i class="material-icons">pause</i>
+					{:else}
+						<i class="material-icons">play_arrow</i>
+					{/if}
+				</button>
+				<button
+					class="restart"
+					on:click={() => {
+						isRunning = false;
+						reset();
+					}}
+					disabled={isRunning || epoch == 0}
+				>
+					<i class="material-icons">refresh</i>
+				</button>
+				<span style="font-size: 20px;">Epoch: {epoch}</span>
+			</div>
+		</div>
+		<Model
+			inputs={dataset}
+			minLatent={min}
+			{latent}
+			maxLatent={max}
+			outputs={preds}
+			axesVisible
+			animating={playing}
+			globalPosition={pos}
+			on:drag={(e) => {
+				const { x, y, z } = e.detail.position;
+				pos = [x, y, z];
+			}}
+		/>
+	</div>
+	<div class="divider" />
+	<div id="layered-view">
+		<Plot3D
+			data3D={[...dataset, ...preds]}
+			lenData={dataset.length}
+			on:hover={(e) => {}}
+			on:drag={(e) => {
+				const { x, y, z } = e.detail.position;
+				pos = [x, y, z];
+			}}
+			width="400px"
+			height="400px"
+			hoveredPointIndex={-1}
+			title={"Reconstructed Inputs"}
+			axesVisible
+			style="border: 3px black solid; border-radius: 5px;"
+			colors={[inputColor, outputColor]}
+			{pos}
+		/>
+	</div>
+</div>
 
 <style lang="scss">
 	.container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		#model-view {
+		}
+		.divider {
+			margin-right: 20px;
+			margin-left: 20px;
+			width: 1px;
+			height: 600px;
+			background-color: lightgray;
+		}
+		#layered-view {
+		}
+		button {
+			cursor: pointer;
+			outline: none;
+			border-radius: 50%;
+			background: black;
+			color: white;
+			width: 50px;
+			margin-right: 5px;
+			padding-top: 50px;
+			padding-bottom: 0;
+			border: none;
+			position: relative;
+		}
+		button:disabled {
+			background: lightgray;
+			cursor: default;
+		}
+		i {
+			display: block;
+			position: absolute;
+			top: 50%;
+			left: 0;
+			width: 100%;
+			height: 36px;
+			font-size: 24px;
+			line-height: 0;
+		}
 	}
 </style>

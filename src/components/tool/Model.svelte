@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { createEventDispatcher } from "svelte";
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Plot2D from "../projections/Plot2D.svelte";
 	import Trapezoid from "./Trapezoid.svelte";
+
+	const dispatch = createEventDispatcher();
 
 	export let inputs: Point3D[] = [];
 	export let latent: Point2D[] = [];
@@ -18,6 +21,7 @@
 		position: { x: number; y: number; z: number };
 	}
 	function receiveAndSetGlobalPosition(e: CustomEvent<IPosition>) {
+		dispatch("drag", e.detail);
 		const { x, y, z } = e.detail.position;
 		globalPosition = [x, y, z];
 	}

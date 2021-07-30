@@ -6,6 +6,18 @@
 	let websiteName: string = "Autoencoder Lab";
 	let dataset: dataType;
 
+	function detectWebBrowser() {
+		const isSafari =
+			/constructor/i.test(window.HTMLElement) ||
+			(function (p) {
+				return p.toString() === "[object SafariRemoteNotification]";
+			})(
+				!window["safari"] ||
+					(typeof safari !== "undefined" &&
+						window["safari"].pushNotification)
+			);
+	}
+
 	onMount(async () => {
 		dataset = await getData("donut.json");
 	});
@@ -14,13 +26,13 @@
 <svelte:head>
 	<title>{websiteName}</title>
 </svelte:head>
-<main>
+<div id="main-tool">
 	{#if dataset}
 		<Tool {dataset} />
 	{:else}
 		<h1>Loading</h1>
 	{/if}
-</main>
+</div>
 
 <style lang="scss">
 	// @media (min-width: 640px) {
@@ -28,4 +40,9 @@
 	// 		max-width: none;
 	// 	}
 	// }
+	#main-tool {
+		// position: relative;
+		height: 600px;
+		border: 1px solid black;
+	}
 </style>
