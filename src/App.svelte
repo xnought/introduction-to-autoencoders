@@ -17,9 +17,35 @@
 						window["safari"].pushNotification)
 			);
 	}
+	// class Dataset {
+	// 	data: Point3D[];
+	// 	inputColors: string[];
+	// 	outputColors: string[];
+	// 	constructor(data: Point3D[], colors: string[]) {
+	// 		this.data = data;
+	// 		this.inputColors = [];
+	// 		this.outputColors = [];
+	// 	}
+	// 	clusterColors(colors: string[]) {
+	// 		const fraction = Math.ceil(colors.length);
+	// 		for(let i = 0; i < this.data.length; i++) {
+	// 			this.inputColors.push(c)
+	// 		}
+	// 	}
+	// 	scaleColors() {
+	// 	}
+	// }
 
+	const dataSetNames = ["donut.json", "clusters.json"];
+	let datasets: any[] = [];
+	let loaded = false;
 	onMount(async () => {
-		dataset = await getData("donut.json");
+		for (const dsn of dataSetNames) {
+			const data = await getData(dsn);
+			datasets.push(data);
+		}
+		loaded = true;
+		console.log(datasets);
 	});
 </script>
 
@@ -27,8 +53,8 @@
 	<title>{websiteName}</title>
 </svelte:head>
 <div id="main-tool">
-	{#if dataset}
-		<Tool {dataset} />
+	{#if loaded}
+		<Tool dataset={datasets[0]} />
 	{:else}
 		<h1>Loading</h1>
 	{/if}
