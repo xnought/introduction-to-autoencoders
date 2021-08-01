@@ -68,7 +68,7 @@
 	// }
 	#main-tool {
 		// position: relative;
-		height: 600px;
+		height: 800px;
 		border: 1px solid black;
 	}
 </style>

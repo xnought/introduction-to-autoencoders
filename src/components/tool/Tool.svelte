@@ -2,24 +2,38 @@
 	import * as tf from "@tensorflow/tfjs";
 	import { arrayToTensor, logMemory, tensorToArray } from "./tool";
 	import { onMount } from "svelte";
+	import { tweened } from "svelte/motion";
+	import * as easings from "svelte/easing";
 	import Plot3D from "../projections/Plot3D.svelte";
+	import Latent from "../projections/Latent.svelte";
 	import Model from "./Model.svelte";
+	function zeros2D(length: number) {
+		let result = [];
+		for (let i = 0; i < length; i++) {
+			result.push([0, 0]);
+		}
+		return result;
+	}
 
 	class Autoencoder {
 		encoder: tf.Sequential;
 		decoder: tf.Sequential;
+		encoderLayers: tf.layers.Layer[];
+		decoderLayers: tf.layers.Layer[];
 		constructor(activation: ActivationIdentifier) {
+			this.encoderLayers = [
+				tf.layers.dense({ units: 2, inputShape: [3], activation }),
+				tf.layers.dense({ units: 2 }),
+			];
 			this.encoder = tf.sequential({
-				layers: [
-					tf.layers.dense({ units: 2, inputShape: [3], activation }),
-					tf.layers.dense({ units: 2 }),
-				],
+				layers: this.encoderLayers,
 			});
+			this.decoderLayers = [
+				tf.layers.dense({ units: 2, inputShape: [2], activation }),
+				tf.layers.dense({ units: 3 }),
+			];
 			this.decoder = tf.sequential({
-				layers: [
-					tf.layers.dense({ units: 2, inputShape: [2], activation }),
-					tf.layers.dense({ units: 3 }),
-				],
+				layers: this.decoderLayers,
 			});
 		}
 		predict(X: tf.Tensor) {
@@ -43,18 +57,32 @@
 	let model: Autoencoder;
 	let tensorDataset: tf.Tensor;
 	let loss: any;
-	let optim: any;
+	let optim: tf.Optimizer;
 	let lr: number;
 	let epoch: number = 0;
 
 	// output items
 	let preds: Point3D[] = [];
 	let latent: Point2D[] = [];
+	let latentDelayed: Point2D[] = zeros2D(dataset.length);
+	let minDelayed: Point2D = [Infinity, Infinity];
+	let maxDelayed: Point2D = [0, 0];
 	let min: Point2D = [Infinity, Infinity];
 	let max: Point2D = [0, 0];
 	let pos: Point3D = [0.45, 0.9, 1.6];
 	let tensors = 0;
 	let printLoss: number;
+	let grads = zeros2D(dataset.length);
+
+	let configTweened = {
+		delay: 0,
+		duration: 1200,
+		easing: easings.cubicInOut,
+	};
+	const gradsTweened = tweened(grads, configTweened);
+	const latentTweened = tweened(latentDelayed, configTweened);
+	const minTweened = tweened(minDelayed, configTweened);
+	const maxTweened = tweened(maxDelayed, configTweened);
 
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let playing = false;
@@ -63,9 +91,21 @@
 		while (playing) {
 			// compute forward, backward, update
 			tf.tidy(() => {
+				// run every 100 because computationally expensive
 				const outputLoss = oneEpoch();
 				printLoss = getScalar(outputLoss);
 				getOuputs();
+				if (epoch % 50 == 0) {
+					grads = computeLatentGrads();
+					latentDelayed = [...latent];
+					minDelayed = min;
+					maxDelayed = max;
+
+					gradsTweened.set(grads);
+					latentTweened.set(latent);
+					minTweened.set(minDelayed);
+					maxTweened.set(maxDelayed);
+				}
 			});
 			epoch++;
 			await timer(0);
@@ -83,10 +123,55 @@
 	}
 	function oneEpoch() {
 		return optim.minimize(
-			// @ts-ignore
 			() => loss(model.predict(tensorDataset), dataset),
 			true
 		);
+	}
+	function latentGrad(
+		inputs: number[],
+		weights: number[][],
+		dweights: number[][]
+	) {
+		const dinput1 =
+			(dweights[0][0] * weights[0][0]) / inputs[0] +
+			(dweights[1][0] * weights[1][0]) / inputs[0];
+		const dinput2 =
+			(dweights[0][1] * weights[0][1]) / inputs[1] +
+			(dweights[1][1] * weights[1][1]) / inputs[1];
+		return [dinput1, dinput2];
+	}
+	function tensorLatentGrad(
+		inputs: tf.Tensor,
+		weights: tf.Tensor,
+		dweights: tf.Tensor
+	) {
+		return weights.mul(dweights).sum(0).div(inputs);
+	}
+	function computeLatentGrads() {
+		const optimCpy = tf.train.adam(lr);
+		const latentGrads = [];
+		const weightsTensor = model.decoder.getWeights()[0];
+		for (const point of dataset) {
+			const wrappedPoint = [point];
+			const input = tf.tensor(wrappedPoint);
+
+			const latentOutputTensor = model.encoder.predict(input);
+			const grads = optimCpy.computeGradients(() =>
+				loss(model.decoder.predict(latentOutputTensor), wrappedPoint)
+			);
+			const weightGradsTensor = grads.grads[Object.keys(grads.grads)[0]];
+			latentGrads.push(
+				tensorToArray(
+					tensorLatentGrad(
+						//@ts-expect-error
+						latentOutputTensor,
+						weightsTensor,
+						weightGradsTensor
+					)
+				)[0]
+			);
+		}
+		return latentGrads;
 	}
 	function getOuputs() {
 		// @ts-ignore
@@ -118,6 +203,16 @@
 		// define optimizer
 		lr = 0.01;
 		optim = tf.train.adam(lr);
+		// const A = tf.tensor2d([1, 2, 3, 4], [2, 2]);
+		// const B = tf.tensor2d([2, 2, 2, 2], [2, 2]);
+		// const INPUTS = tf.tensor([[2, 3]]);
+		// const mult = A.mul(B);
+		// mult.print();
+		// const sum = mult.sum(0);
+		// sum.print();
+		// const div = sum.div(INPUTS);
+		// div.print();
+		// tensorLatentGrad(INPUTS, A, B).print();
 	});
 	function clearGlobalMemory() {
 		clearTensorMemory(tensorDataset);
@@ -132,8 +227,8 @@
 	}
 
 	let inputColor = "hsla(0, 0%, 0%, 0.5)";
-	let latentColor = "hsla(194, 74%, 73%, 1)";
-	let outputColor = "hsla(249, 48%, 84%, 0.5)";
+	let latentColor = "hsla(194, 91%, 45%, 1)";
+	let outputColor = "hsla(248, 49%, 68%, 0.5)";
 	let isRunning = false;
 </script>
 
@@ -212,6 +307,14 @@
 			colors={[inputColor, outputColor]}
 			{pos}
 		/>
+		<div id="latent-grads">
+			<Latent
+				grads={$gradsTweened}
+				points={$latentTweened}
+				min={$minTweened}
+				max={$maxTweened}
+			/>
+		</div>
 	</div>
 </div>
 
@@ -227,10 +330,16 @@
 			margin-right: 20px;
 			margin-left: 20px;
 			width: 1px;
-			height: 600px;
+			height: 800px;
 			background-color: lightgray;
 		}
 		#layered-view {
+			#latent-grads {
+				margin-top: 25px;
+				// width: 300px;
+				// height: 300px;
+				// background: lightgrey;
+			}
 		}
 		button {
 			cursor: pointer;

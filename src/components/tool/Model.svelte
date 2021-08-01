@@ -31,7 +31,7 @@
 
 	// fix this later to include mutliple colors labels for data
 	let inputColor = "hsla(0, 0%, 0%, 0.5)";
-	let latentColor = "hsla(194, 74%, 73%, 1)";
+	let latentColor = "hsla(194, 91%, 45%, 1)";
 	let outputColor = "hsla(249, 48%, 84%, 0.5)";
 </script>
 
