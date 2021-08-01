@@ -22,9 +22,6 @@
 	let yScale = d3.scaleLinear().domain([-2, 2]).range([height, 0]);
 
 	$: {
-		console.log(points);
-	}
-	$: {
 		updateAxes(min, max);
 	}
 	function updateAxes(min: Point2D, max: Point2D) {

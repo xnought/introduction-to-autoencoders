@@ -69,6 +69,7 @@
 	#main-tool {
 		// position: relative;
 		height: 800px;
-		border: 1px solid black;
+		// border: 1px solid black;
+		border-top: 1px solid rgba(0, 0, 0, 0.1);
 	}
 </style>

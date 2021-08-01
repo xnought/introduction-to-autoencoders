@@ -44,9 +44,9 @@
 			width="165px"
 			height="165px"
 			hoveredPointIndex={globalHover}
-			{axesVisible}
 			colors={[inputColor]}
 			pos={globalPosition}
+			axesVisible={false}
 		/>
 	</div>
 	<div class="encoder">
@@ -90,7 +90,7 @@
 			width="165px"
 			height="165px"
 			hoveredPointIndex={globalHover}
-			{axesVisible}
+			axesVisible={false}
 			colors={[outputColor]}
 			pos={globalPosition}
 		/>
@@ -99,7 +99,7 @@
 
 <style lang="scss">
 	$outline: 1px solid black;
-	$test-color: hsla(0, 0%, 0%, 0.5);
+	$test-color: hsla(0, 0%, 0%, 0.1);
 	@mixin add-border() {
 		border: $outline;
 	}

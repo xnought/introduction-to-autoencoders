@@ -12,8 +12,8 @@
 		point1 = xScale(point[0]);
 		point2 = yScale(point[1]);
 
-		grad1 = xScale(-grad[0]) * norm;
-		grad2 = yScale(-grad[1]) * norm;
+		grad1 = xScale(grad[0]);
+		grad2 = yScale(grad[1]);
 	}
 </script>
 

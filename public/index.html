@@ -27,8 +27,8 @@
 		<d-front-matter>
 			<script type="text/json">
 				{
-					"title": "Communicating with Interactive Articles",
-					"description": "Examining the design of interactive articles by synthesizing theory from disciplines such as education, journalism, and visualization.",
+					"title": "Introduction to Autoencoders",
+					"description": "An intuitive walkthrough of a popular neural network architecture known as an autoencoder.",
 					"authors": [
 						{
 							"author": "Donny R. Bertucci",
@@ -56,20 +56,55 @@
 		</d-front-matter>
 
 		<d-title>
-			<h1>Autoencoder (insert title)</h1>
-			<p>An intuitive walkthrough of autoencoders.</p>
+			<h1>What are Autoencoders?</h1>
+			<p>
+				An intuitive walkthrough of a very popular and useful neural
+				network architecture: <b>autoencoders</b>.
+			</p>
 		</d-title>
-		<div id="main"></div>
+		<!-- 
+
+			http://www.vision.jhu.edu/teaching/learning/deeplearning19/assets/Baldi_Hornik-89.pdf
+			http://proceedings.mlr.press/v27/baldi12a/baldi12a.pdf
+			add this to the bibtex later
+		 -->
 
 		<d-byline></d-byline>
+		<d-abstract>
+			<p>
+				Autoencoders have many different applications, but most notably
+				they have been used as generative models and for dimensionality
+				reduction
+				<d-footnote
+					>Specific applications will be discussed in section
+					...</d-footnote
+				>. Although autoencoders are used to learn complex
+				representations, the architecture is actually
+				<b> very simple</b>! Autoencoders just <i>deconstruct</i> down,
+				then learn to <i>reconstruct</i> back up. Before we go any
+				further, try one for yourself –
+				<b>Train an autoencoder on a 3D Dataset below in</b>
+				<a class="figure-number-text" href="#main">1</a>.
+			</p>
+		</d-abstract>
+		<div id="main"></div>
 
 		<d-article>
-			<!-- <d-contents id="toc">
-				<ol>
-					<li>Nice</li>
-				</ol>
-			</d-contents> -->
-			<p id="introduction"></p>
+			<p id="introduction">
+				The rest of this article will be focus on each part of
+				<a class="figure-number-text" href="#main">1</a>, explaining the
+				details in context to the visualization and applications
+				elsewhere.
+			</p>
+			<h2>Overview</h2>
+			<h2>Structure</h2>
+			<h3>Encoder</h3>
+			<h3>Latent Space</h3>
+			<h3>Decoder</h3>
+			<h2>What Next?</h2>
+			<!-- <figcaption style="grid-column: text / text">
+				this is a caption
+			</figcaption> -->
 		</d-article>
 
 		<d-appendix>

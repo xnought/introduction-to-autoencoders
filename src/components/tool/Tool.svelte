@@ -76,8 +76,8 @@
 
 	let configTweened = {
 		delay: 0,
-		duration: 1200,
-		easing: easings.cubicInOut,
+		duration: 1000,
+		easing: easings.expoInOut,
 	};
 	const gradsTweened = tweened(grads, configTweened);
 	const latentTweened = tweened(latentDelayed, configTweened);
@@ -145,10 +145,12 @@
 		weights: tf.Tensor,
 		dweights: tf.Tensor
 	) {
-		return weights.mul(dweights).sum(0).div(inputs);
+		const dInputs = weights.mul(dweights).sum(0).div(inputs);
+		const gradDesc = inputs.sub(dInputs.mul(lr));
+		return gradDesc;
 	}
 	function computeLatentGrads() {
-		const optimCpy = tf.train.adam(lr);
+		const optimCpy = tf.train.sgd(lr);
 		const latentGrads = [];
 		const weightsTensor = model.decoder.getWeights()[0];
 		for (const point of dataset) {
@@ -201,8 +203,8 @@
 		// define loss
 		loss = tf.losses.meanSquaredError;
 		// define optimizer
-		lr = 0.01;
-		optim = tf.train.adam(lr);
+		lr = 0.3;
+		optim = tf.train.sgd(lr);
 		// const A = tf.tensor2d([1, 2, 3, 4], [2, 2]);
 		// const B = tf.tensor2d([2, 2, 2, 2], [2, 2]);
 		// const INPUTS = tf.tensor([[2, 3]]);
@@ -331,7 +333,7 @@
 			margin-left: 20px;
 			width: 1px;
 			height: 800px;
-			background-color: lightgray;
+			background-color: rgba(0, 0, 0, 0.1);
 		}
 		#layered-view {
 			#latent-grads {
