@@ -5,8 +5,8 @@
 
 	/* Put stuff here */
 	export let padding = 0.1;
-	export let height = 300;
-	export let width = 300;
+	export let height = 200;
+	export let width = 200;
 	export let min: Point2D;
 	export let max: Point2D;
 	export let grads: Point2D[] = [
@@ -18,8 +18,8 @@
 		[0.5, 0.2],
 	];
 
-	let xScale = d3.scaleLinear().domain([-2, 2]).range([0, width]);
-	let yScale = d3.scaleLinear().domain([-2, 2]).range([height, 0]);
+	let xScale = d3.scaleLinear().domain([-1, 1]).range([0, width]);
+	let yScale = d3.scaleLinear().domain([-1, 1]).range([height, 0]);
 
 	$: {
 		updateAxes(min, max);

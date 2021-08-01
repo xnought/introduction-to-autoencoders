@@ -30,13 +30,20 @@
 	}
 
 	// fix this later to include mutliple colors labels for data
-	let inputColor = "hsla(0, 0%, 0%, 0.5)";
-	let latentColor = "hsla(194, 91%, 45%, 1)";
-	let outputColor = "hsla(249, 48%, 84%, 0.5)";
+	export let inputColor = "hsla(0, 0%, 0%, 0.3)";
+	export let latentColor = "hsla(194, 91%, 45%, 0.5)";
+	export let encoderFill = "hsla(194, 74%, 73%, 1)";
+	export let decoderFill = "hsla(249, 48%, 84%, 1)";
+	export let outputColor = "hsla(249, 48%, 84%, 0.5)";
+	export let borderRadius = 3;
+	export let borderWidth = 3;
 </script>
 
 <div class="container">
-	<div class="input">
+	<div
+		class="input"
+		style="border: {borderWidth}px {inputColor} solid; border-radius: {borderRadius}px;"
+	>
 		<Plot3D
 			data3D={inputs}
 			on:hover={receiveAndSetGlobalHover}
@@ -46,8 +53,13 @@
 			hoveredPointIndex={globalHover}
 			colors={[inputColor]}
 			pos={globalPosition}
-			axesVisible={false}
+			{axesVisible}
 		/>
+		<div class="text-center">
+			<div class="colored" style="color: {inputColor};">
+				3D Input Data
+			</div>
+		</div>
 	</div>
 	<div class="encoder">
 		<Trapezoid
@@ -55,12 +67,20 @@
 			height={165}
 			leftVerticalWidth={100}
 			rightVerticalWidth={50}
-			fill="hsla(194, 74%, 73%, 1)"
-			stroke="hsla(194, 91%, 45%, 0.5)"
+			fill={encoderFill}
+			stroke={latentColor}
 			{animating}
 		/>
+		<div class="text-center">
+			<div class="colored" style="color: {encoderFill}; font-size: 20px;">
+				Encoder
+			</div>
+		</div>
 	</div>
-	<div class="latent">
+	<div
+		class="latent"
+		style="border: {borderWidth}px {latentColor} solid; border-radius: {borderRadius}px;"
+	>
 		<Plot2D
 			data2D={latent}
 			width={81}
@@ -70,6 +90,11 @@
 			min={minLatent}
 			max={maxLatent}
 		/>
+		<div class="text-center">
+			<div class="colored" style="color: {latentColor}; font-size: 11px;">
+				Latent Space
+			</div>
+		</div>
 	</div>
 	<div class="decoder">
 		<Trapezoid
@@ -77,12 +102,20 @@
 			height={165}
 			leftVerticalWidth={50}
 			rightVerticalWidth={100}
-			fill="hsla(249, 48%, 84%, 1)"
-			stroke="hsla(248, 49%, 68%, 0.5)"
+			fill={decoderFill}
+			stroke={outputColor}
 			{animating}
 		/>
+		<div class="text-center">
+			<div class="colored" style="color: {decoderFill}; font-size: 20px;">
+				Decoder
+			</div>
+		</div>
 	</div>
-	<div class="output">
+	<div
+		class="output"
+		style="border: {borderWidth}px {outputColor} solid; border-radius: {borderRadius}px;"
+	>
 		<Plot3D
 			data3D={outputs}
 			on:hover={receiveAndSetGlobalHover}
@@ -90,10 +123,15 @@
 			width="165px"
 			height="165px"
 			hoveredPointIndex={globalHover}
-			axesVisible={false}
 			colors={[outputColor]}
 			pos={globalPosition}
+			{axesVisible}
 		/>
+		<div class="text-center">
+			<div class="colored" style="color: {outputColor};">
+				Reconstruction
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -105,19 +143,17 @@
 	}
 
 	.container {
-		@include add-border();
+		// @include add-border();
 		position: relative;
 		width: 794px;
 		height: 196px;
 
 		.input {
-			@include add-border();
 			position: absolute;
 			width: 165px;
 			height: 165px;
 			left: 19px;
 			top: 15px;
-
 			// box-sizing: border-box;
 		}
 		.encoder {
@@ -128,12 +164,13 @@
 			top: 15px;
 		}
 		.latent {
-			@include add-border();
+			// @include add-border();
 			position: absolute;
 			width: 81px;
 			height: 81px;
 			left: 357px;
 			top: 57px;
+			box-sizing: border-box;
 		}
 		.decoder {
 			position: absolute;
@@ -143,12 +180,20 @@
 			top: 15px;
 		}
 		.output {
-			@include add-border();
+			// @include add-border();
 			position: absolute;
 			width: 165px;
 			height: 165px;
 			left: 611px;
 			top: 15px;
 		}
+	}
+	.text-center {
+		text-align: center;
+	}
+	.colored {
+		display: inline;
+		font-size: 15px;
+		font-weight: 500;
 	}
 </style>

@@ -95,7 +95,7 @@
 				const outputLoss = oneEpoch();
 				printLoss = getScalar(outputLoss);
 				getOuputs();
-				if (epoch % 50 == 0) {
+				if (epoch % 100 == 0) {
 					grads = computeLatentGrads();
 					latentDelayed = [...latent];
 					minDelayed = min;
@@ -228,9 +228,11 @@
 		}
 	}
 
-	let inputColor = "hsla(0, 0%, 0%, 0.5)";
+	let inputColor = "hsla(0, 0%, 0%, 0.2)";
 	let latentColor = "hsla(194, 91%, 45%, 1)";
 	let outputColor = "hsla(248, 49%, 68%, 0.5)";
+	let encoderFill = "";
+	let decoderFill = "";
 	let isRunning = false;
 </script>
 
@@ -243,7 +245,7 @@
 > -->
 <div class="container">
 	<div id="model-view">
-		<div class="data-controls">
+		<!-- <div class="data-controls">
 			<div class="play-controls">
 				<button
 					class="play-pause"
@@ -274,7 +276,7 @@
 				</button>
 				<span style="font-size: 20px;">Epoch: {epoch}</span>
 			</div>
-		</div>
+		</div> -->
 		<Model
 			inputs={dataset}
 			minLatent={min}
@@ -288,27 +290,54 @@
 				const { x, y, z } = e.detail.position;
 				pos = [x, y, z];
 			}}
+			{inputColor}
 		/>
 	</div>
 	<div class="divider" />
-	<div id="layered-view">
-		<Plot3D
-			data3D={[...dataset, ...preds]}
-			lenData={dataset.length}
-			on:hover={(e) => {}}
-			on:drag={(e) => {
-				const { x, y, z } = e.detail.position;
-				pos = [x, y, z];
-			}}
-			width="400px"
-			height="400px"
-			hoveredPointIndex={-1}
-			title={"Reconstructed Inputs"}
-			axesVisible
-			style="border: 3px black solid; border-radius: 5px;"
-			colors={[inputColor, outputColor]}
-			{pos}
-		/>
+	<div id="graphs">
+		<div id="layered-view">
+			<div style="position: relative;">
+				<div class="colored" style="color: black; font-weight: normal;">
+					Layered
+				</div>
+				<div class="colored" style="color: {inputColor};">
+					3D input Data
+				</div>
+				<div class="colored" style="color: black; font-weight: normal;">
+					and
+				</div>
+				<div class="colored" style="color: {outputColor};">
+					Reconstruction
+				</div>
+				<!-- <div class="colored" style="color: {outputColor};">
+					<span class="material-icons">3d_rotation</span>
+					<img src="pointer.svg" />
+				</div> -->
+
+				<div class="colored" style="color: {inputColor};">
+					<span class="material-icons">3d_rotation</span>
+				</div>
+			</div>
+			<div>
+				<Plot3D
+					data3D={[...dataset, ...preds]}
+					lenData={dataset.length}
+					on:hover={(e) => {}}
+					on:drag={(e) => {
+						const { x, y, z } = e.detail.position;
+						pos = [x, y, z];
+					}}
+					width="400px"
+					height="400px"
+					hoveredPointIndex={-1}
+					title={"Reconstructed Inputs"}
+					axesVisible
+					style="border: 2px rgba(0, 0, 0, 0.1) solid; border-radius: 3px;"
+					colors={[inputColor, outputColor]}
+					{pos}
+				/>
+			</div>
+		</div>
 		<div id="latent-grads">
 			<Latent
 				grads={$gradsTweened}
@@ -335,12 +364,13 @@
 			height: 800px;
 			background-color: rgba(0, 0, 0, 0.1);
 		}
-		#layered-view {
+		#graphs {
 			#latent-grads {
 				margin-top: 25px;
 				// width: 300px;
 				// height: 300px;
 				// background: lightgrey;
+				border: 1px black solid;
 			}
 		}
 		button {
@@ -370,5 +400,10 @@
 			font-size: 24px;
 			line-height: 0;
 		}
+	}
+	.colored {
+		display: inline;
+		font-size: 20px;
+		font-weight: 500;
 	}
 </style>
