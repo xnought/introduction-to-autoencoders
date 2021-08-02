@@ -9,6 +9,10 @@
 	export let width = 200;
 	export let min: Point2D;
 	export let max: Point2D;
+	export let fill = "hsla(194, 91%, 45%, 1)";
+	export let borderColor = "hsla(194, 91%, 45%, 0.5)";
+	export let borderRadius = 3;
+	export let borderWidth = 3;
 	export let grads: Point2D[] = [
 		[0.2, 0.2],
 		[0.1, 0.1],
@@ -39,16 +43,15 @@
 	let svg: SVGElement;
 </script>
 
-<svg bind:this={svg} {width} {height}>
-	<!-- <rect {width} {height} fill="lightgray" /> -->
+<svg
+	bind:this={svg}
+	{width}
+	{height}
+	style="border: {borderWidth}px {borderColor} solid; border-radius: {borderRadius}px;"
+>
 	{#each points as point, index}
 		<Triangle {point} grad={grads[index]} {xScale} {yScale} />
-		<circle
-			cx={xScale(point[0])}
-			cy={yScale(point[1])}
-			r={3}
-			fill="hsla(194, 91%, 45%, 1)"
-		/>
+		<circle cx={xScale(point[0])} cy={yScale(point[1])} r={3} {fill} />
 	{/each}
 </svg>
 

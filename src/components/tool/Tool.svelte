@@ -7,6 +7,13 @@
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Latent from "../projections/Latent.svelte";
 	import Model from "./Model.svelte";
+	function zeros3D(length: number) {
+		let result = [];
+		for (let i = 0; i < length; i++) {
+			result.push([0, 0, 0]);
+		}
+		return result;
+	}
 	function zeros2D(length: number) {
 		let result = [];
 		for (let i = 0; i < length; i++) {
@@ -15,23 +22,96 @@
 		return result;
 	}
 
+	//directly from ganlab by minuk kahng
+	function zeroPad(n: number): string {
+		const pad = "000000";
+		return (pad + n)
+			.slice(-pad.length)
+			.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
+
+	interface IComposition {
+		encoderNeurons: number[];
+		decoderNeurons: number[];
+		activation: ActivationIdentifier;
+	}
+	function compose({
+		encoderNeurons,
+		decoderNeurons,
+		activation,
+	}: IComposition) {
+		let encoderLayers = [],
+			decoderLayers = [];
+
+		// encoder composition
+		// input layer
+		encoderLayers.push(
+			tf.layers.dense({
+				units: encoderNeurons[0],
+				inputShape: [3],
+				activation,
+			})
+		);
+		for (let layer = 1; layer < encoderNeurons.length; layer++) {
+			encoderLayers.push(
+				tf.layers.dense({
+					units: encoderNeurons[layer],
+					activation,
+				})
+			);
+		}
+		// latent output
+		encoderLayers.push(tf.layers.dense({ units: 2 }));
+
+		// decoder composition
+		decoderLayers.push(
+			tf.layers.dense({
+				units: decoderNeurons[0],
+				inputShape: [2],
+				activation,
+			})
+		);
+
+		for (let layer = 1; layer < decoderNeurons.length; layer++) {
+			decoderLayers.push(
+				tf.layers.dense({
+					units: decoderNeurons[layer],
+					activation,
+				})
+			);
+		}
+		//output layer
+		decoderLayers.push(
+			tf.layers.dense({
+				units: 3,
+			})
+		);
+		return { encoderLayers, decoderLayers };
+	}
+
 	class Autoencoder {
 		encoder: tf.Sequential;
 		decoder: tf.Sequential;
 		encoderLayers: tf.layers.Layer[];
 		decoderLayers: tf.layers.Layer[];
-		constructor(activation: ActivationIdentifier) {
-			this.encoderLayers = [
-				tf.layers.dense({ units: 2, inputShape: [3], activation }),
-				tf.layers.dense({ units: 2 }),
-			];
+		constructor(
+			activation: ActivationIdentifier,
+			encoderNeurons: number[],
+			decoderNeurons: number[]
+		) {
+			const { decoderLayers, encoderLayers } = tf.tidy(() =>
+				compose({
+					encoderNeurons,
+					decoderNeurons,
+					activation,
+				})
+			);
+
+			this.encoderLayers = encoderLayers;
+			this.decoderLayers = decoderLayers;
 			this.encoder = tf.sequential({
 				layers: this.encoderLayers,
 			});
-			this.decoderLayers = [
-				tf.layers.dense({ units: 2, inputShape: [2], activation }),
-				tf.layers.dense({ units: 3 }),
-			];
 			this.decoder = tf.sequential({
 				layers: this.decoderLayers,
 			});
@@ -58,7 +138,8 @@
 	let tensorDataset: tf.Tensor;
 	let loss: any;
 	let optim: tf.Optimizer;
-	let lr: number;
+	let lr: number = 0.3;
+	let activation: ActivationIdentifier = "tanh";
 	let epoch: number = 0;
 
 	// output items
@@ -73,16 +154,21 @@
 	let tensors = 0;
 	let printLoss: number;
 	let grads = zeros2D(dataset.length);
+	const lrOptions = [0.001, 0.01, 0.1, 0.3, 1];
+	const actOptions = ["tanh", "sigmoid", "relu"];
+	let encoderNeurons = [3, 2];
+	let decoderNeurons = [2, 3];
 
 	let configTweened = {
 		delay: 0,
 		duration: 1000,
-		easing: easings.expoInOut,
+		easing: easings.cubicOut,
 	};
 	const gradsTweened = tweened(grads, configTweened);
 	const latentTweened = tweened(latentDelayed, configTweened);
 	const minTweened = tweened(minDelayed, configTweened);
 	const maxTweened = tweened(maxDelayed, configTweened);
+	const predsTweened = tweened(zeros3D(dataset.length), configTweened);
 
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let playing = false;
@@ -105,6 +191,7 @@
 					latentTweened.set(latent);
 					minTweened.set(minDelayed);
 					maxTweened.set(maxDelayed);
+					predsTweened.set(preds);
 				}
 			});
 			epoch++;
@@ -116,9 +203,14 @@
 	}
 	function reset() {
 		model.dispose();
-		model = new Autoencoder("tanh");
+		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
 		preds = [];
 		latent = [];
+		printLoss = undefined;
+		// gradsTweened.set(zeros2D(dataset.length));
+		// latentTweened.set(zeros2D(dataset.length));
+		// minTweened.set([-2, 2]);
+		// maxTweened.set([-2, 2]);
 		epoch = 0;
 	}
 	function oneEpoch() {
@@ -173,6 +265,7 @@
 				)[0]
 			);
 		}
+		optimCpy.dispose();
 		return latentGrads;
 	}
 	function getOuputs() {
@@ -195,26 +288,17 @@
 		min = tensorToArray(minTensor);
 	}
 
+	let mounted = false;
 	onMount(async () => {
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
 		// define model
-		model = new Autoencoder("tanh");
+		model = new Autoencoder("tanh", encoderNeurons, decoderNeurons);
 		// define loss
 		loss = tf.losses.meanSquaredError;
 		// define optimizer
-		lr = 0.3;
 		optim = tf.train.sgd(lr);
-		// const A = tf.tensor2d([1, 2, 3, 4], [2, 2]);
-		// const B = tf.tensor2d([2, 2, 2, 2], [2, 2]);
-		// const INPUTS = tf.tensor([[2, 3]]);
-		// const mult = A.mul(B);
-		// mult.print();
-		// const sum = mult.sum(0);
-		// sum.print();
-		// const div = sum.div(INPUTS);
-		// div.print();
-		// tensorLatentGrad(INPUTS, A, B).print();
+		mounted = true;
 	});
 	function clearGlobalMemory() {
 		clearTensorMemory(tensorDataset);
@@ -227,6 +311,14 @@
 			tensor.dispose();
 		}
 	}
+	function setOptimizer(lr: number) {
+		optim.dispose();
+		optim = tf.train.sgd(lr);
+	}
+	function setModel(activation: ActivationIdentifier) {
+		model.dispose();
+		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
+	}
 
 	let inputColor = "hsla(0, 0%, 0%, 0.2)";
 	let latentColor = "hsla(194, 91%, 45%, 1)";
@@ -234,6 +326,19 @@
 	let encoderFill = "";
 	let decoderFill = "";
 	let isRunning = false;
+
+	// computed properties
+	$: optionsEnabled = epoch == 0 && printLoss == undefined;
+	$: {
+		if (mounted) {
+			setOptimizer(lr);
+		}
+	}
+	$: {
+		if (mounted) {
+			setModel(activation);
+		}
+	}
 </script>
 
 <!-- <div>Epoch={epoch}, Loss={printLoss}</div>
@@ -243,9 +348,22 @@
 <button on:click={() => (tensors = tf.memory().numTensors)}
 	>Num Tensors={tensors}</button
 > -->
-<div class="container">
-	<div id="model-view">
-		<!-- <div class="data-controls">
+
+<div id="control-center">
+	<div id="datasets">
+		<div
+			class="dataset"
+			on:click={() => {
+				logMemory();
+			}}
+		>
+			D1
+		</div>
+		<div class="dataset">D2</div>
+		<div class="dataset">D3</div>
+	</div>
+	<div id="controls">
+		<div class="data-controls">
 			<div class="play-controls">
 				<button
 					class="play-pause"
@@ -274,9 +392,40 @@
 				>
 					<i class="material-icons">refresh</i>
 				</button>
-				<span style="font-size: 20px;">Epoch: {epoch}</span>
 			</div>
+		</div>
+	</div>
+	<div id="metrics">
+		<div style="font-size: 16px; font-weight: 250;">Epochs</div>
+		<div style="font-size: 25px;">{zeroPad(epoch)}</div>
+	</div>
+	<div id="loss">
+		<div style="font-size: 16px; font-weight: 250;">Loss</div>
+		<div style="font-size: 25px;">
+			{printLoss ? printLoss.toFixed(6) : "null"}
+		</div>
+	</div>
+	<div id="custom">
+		<div id="lr">
+			<div style="font-size: 16px; font-weight: 250;">Learning Rate</div>
+			<select bind:value={lr} disabled={!optionsEnabled}>
+				{#each lrOptions as option}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
+		</div>
+		<!-- <div id="activation">
+			<div style="font-size: 16px; font-weight: 250;">Activation</div>
+			<select bind:value={activation} disabled={!optionsEnabled}>
+				{#each actOptions as option}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
 		</div> -->
+	</div>
+</div>
+<div class="container">
+	<div id="model-view">
 		<Model
 			inputs={dataset}
 			minLatent={min}
@@ -320,7 +469,7 @@
 			</div>
 			<div>
 				<Plot3D
-					data3D={[...dataset, ...preds]}
+					data3D={[...dataset, ...$predsTweened]}
 					lenData={dataset.length}
 					on:hover={(e) => {}}
 					on:drag={(e) => {
@@ -339,30 +488,116 @@
 			</div>
 		</div>
 		<div id="latent-grads">
-			<Latent
-				grads={$gradsTweened}
-				points={$latentTweened}
-				min={$minTweened}
-				max={$maxTweened}
-			/>
+			<div>
+				<div
+					class="colored"
+					style="color: {latentColor};font-size: 15px;"
+				>
+					Latent Space
+				</div>
+				with
+				<div class="colored" style="color: #A5DAEF;font-size: 15px;">
+					Opposite Gradients
+				</div>
+			</div>
+			<div>
+				<Latent
+					grads={$gradsTweened}
+					points={$latentTweened}
+					min={$minTweened}
+					max={$maxTweened}
+				/>
+			</div>
 		</div>
 	</div>
 </div>
 
 <style lang="scss">
+	$divider-color: hsla(0, 0%, 0%, 0.1);
+	#control-center {
+		height: 60px;
+		display: flex;
+		align-items: center;
+		margin-left: 150px;
+		// border-bottom: 1px $divider-color solid;
+		width: 800px;
+
+		#datasets {
+			display: flex;
+			.dataset {
+				height: 40px;
+				width: 40px;
+				border: 1px solid black;
+				margin: 5px;
+			}
+			margin-right: 50px;
+		}
+		#controls {
+			button {
+				cursor: pointer;
+				outline: none;
+				border-radius: 50%;
+				background: steelblue;
+				color: white;
+				width: 50px;
+				margin-right: 5px;
+				padding-top: 50px;
+				padding-bottom: 0;
+				border: none;
+				position: relative;
+			}
+			button:disabled {
+				background: lightgray;
+				cursor: default;
+			}
+			i {
+				display: block;
+				position: absolute;
+				top: 50%;
+				left: 0;
+				width: 100%;
+				height: 36px;
+				font-size: 30px;
+				line-height: 0;
+			}
+		}
+		#metrics {
+			width: 100px;
+			margin-left: 20px;
+		}
+		#loss {
+			width: 100px;
+			margin-left: 20px;
+		}
+		#custom {
+			margin-left: 20px;
+			display: flex;
+			#lr {
+			}
+			#activation {
+				margin-left: 20px;
+			}
+		}
+	}
 	.container {
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		border-top: 1px solid $divider-color;
+		user-select: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
 
 		#model-view {
 		}
 		.divider {
-			margin-right: 20px;
+			margin-right: 40px;
 			margin-left: 20px;
 			width: 1px;
 			height: 800px;
-			background-color: rgba(0, 0, 0, 0.1);
+			background-color: $divider-color;
 		}
 		#graphs {
 			#latent-grads {
@@ -370,35 +605,8 @@
 				// width: 300px;
 				// height: 300px;
 				// background: lightgrey;
-				border: 1px black solid;
+				// border: 1px black solid;
 			}
-		}
-		button {
-			cursor: pointer;
-			outline: none;
-			border-radius: 50%;
-			background: black;
-			color: white;
-			width: 50px;
-			margin-right: 5px;
-			padding-top: 50px;
-			padding-bottom: 0;
-			border: none;
-			position: relative;
-		}
-		button:disabled {
-			background: lightgray;
-			cursor: default;
-		}
-		i {
-			display: block;
-			position: absolute;
-			top: 50%;
-			left: 0;
-			width: 100%;
-			height: 36px;
-			font-size: 24px;
-			line-height: 0;
 		}
 	}
 	.colored {

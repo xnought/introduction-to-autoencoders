@@ -15,7 +15,7 @@
 
 	export let globalPosition: Point3D = [0.45, 0.9, 1.6];
 	export let globalHover: number = -1;
-	export let axesVisible: boolean = true;
+	export let axesVisible: boolean = false;
 
 	interface IPosition {
 		position: { x: number; y: number; z: number };
