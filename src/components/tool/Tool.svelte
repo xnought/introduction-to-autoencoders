@@ -133,7 +133,8 @@
 	}
 
 	// model config
-	export let dataset: dataType;
+	export let datasets: dataType[];
+	export let dataset: dataType = datasets[2];
 	let model: Autoencoder;
 	let tensorDataset: tf.Tensor;
 	let loss: any;
@@ -154,20 +155,22 @@
 	let tensors = 0;
 	let printLoss: number;
 	let grads = zeros2D(dataset.length);
-	const lrOptions = [0.001, 0.01, 0.1, 0.3, 1];
+	const lrOptions = [0.00001, 0.001, 0.01, 0.1, 0.3, 0.5, 1];
 	const actOptions = ["tanh", "sigmoid", "relu"];
-	let encoderNeurons = [2];
-	let decoderNeurons = [2];
+	let encoderNeurons = [64, 64, 64, 2];
+	let decoderNeurons = [2, 64, 64, 64];
 
 	let configTweened = {
 		delay: 0,
 		duration: 1000,
 		easing: easings.cubicOut,
 	};
-	const gradsTweened = tweened(zeros2D(dataset.length), configTweened);
-	const latentTweened = tweened(zeros2D(dataset.length), configTweened);
-	const minTweened = tweened([0, 0], configTweened);
-	const maxTweened = tweened([0, 0], configTweened);
+	// computed when we change dataset or config
+	$: gradsTweened = tweened(zeros2D(dataset.length), configTweened);
+	$: latentTweened = tweened(zeros2D(dataset.length), configTweened);
+	$: minTweened = tweened([0, 0], configTweened);
+	$: maxTweened = tweened([0, 0], configTweened);
+	$: predsTweened = tweened(zeros3D(dataset.length), configTweened);
 
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let playing = false;
@@ -186,6 +189,7 @@
 					latentTweened.set(latent);
 					minTweened.set(min);
 					maxTweened.set(max);
+					predsTweened.set(preds);
 				}
 			});
 			epoch++;
@@ -287,11 +291,11 @@
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
 		// define model
-		model = new Autoencoder("tanh", encoderNeurons, decoderNeurons);
+		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
 		// define loss
 		loss = tf.losses.meanSquaredError;
 		// define optimizer
-		optim = tf.train.sgd(lr);
+		optim = tf.train.adam(lr);
 		mounted = true;
 	});
 	function clearGlobalMemory() {
@@ -307,7 +311,7 @@
 	}
 	function setOptimizer(lr: number) {
 		optim.dispose();
-		optim = tf.train.sgd(lr);
+		optim = tf.train.adam(lr);
 	}
 	function setModel(activation: ActivationIdentifier) {
 		model.dispose();
@@ -345,16 +349,16 @@
 
 <div id="control-center">
 	<div id="datasets">
-		<div
-			class="dataset"
-			on:click={() => {
-				logMemory();
-			}}
-		>
-			D1
-		</div>
-		<div class="dataset">D2</div>
-		<div class="dataset">D3</div>
+		{#each datasets as ds, i}
+			<div
+				class="dataset"
+				on:click={() => {
+					dataset = [...ds];
+				}}
+			>
+				{i}
+			</div>
+		{/each}
 	</div>
 	<div id="controls">
 		<div class="data-controls">
@@ -408,14 +412,14 @@
 				{/each}
 			</select>
 		</div>
-		<!-- <div id="activation">
+		<div id="activation">
 			<div style="font-size: 16px; font-weight: 250;">Activation</div>
 			<select bind:value={activation} disabled={!optionsEnabled}>
 				{#each actOptions as option}
 					<option value={option}>{option}</option>
 				{/each}
 			</select>
-		</div> -->
+		</div>
 	</div>
 </div>
 <div class="container">
@@ -463,7 +467,7 @@
 			</div>
 			<div>
 				<Plot3D
-					data3D={[...dataset, ...preds]}
+					data3D={[...dataset, ...$predsTweened]}
 					lenData={dataset.length}
 					on:hover={(e) => {}}
 					on:drag={(e) => {

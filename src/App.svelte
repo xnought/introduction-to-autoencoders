@@ -36,7 +36,12 @@
 	// 	}
 	// }
 
-	const dataSetNames = ["donut.json", "clusters.json"];
+	const dataSetNames = [
+		"spiral.json",
+		"saddle.json",
+		"trefoilknot.json",
+		"twistedcubic.json",
+	];
 	let datasets: any[] = [];
 	let loaded = false;
 	onMount(async () => {
@@ -54,7 +59,7 @@
 </svelte:head>
 <div id="main-tool">
 	{#if loaded}
-		<Tool dataset={datasets[0]} />
+		<Tool {datasets} />
 	{:else}
 		<h1>Loading</h1>
 	{/if}
