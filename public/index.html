@@ -7,7 +7,7 @@
 		<title>Svelte app</title>
 
 		<link rel="icon" type="image/png" href="/favicon.png" />
-		<link rel="stylesheet" href="/global.css" />
+		<link rel="stylesheet" href="/styles.css" />
 		<link rel="stylesheet" href="/build/bundle.css" />
 
 		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.12.0/d3.min.js"></script> -->
@@ -15,12 +15,151 @@
 		<script src="/scatter-gl.js"></script> -->
 		<!-- <script src="https://cdn.jsdelivr.net/npm/scatter-gl@0.0.1/lib/scatter-gl.min.js"></script> -->
 
-		<script defer src="/build/bundle.js"></script>
+		<script src="https://distill.pub/template.v2.js"></script>
 		<link
 			href="https://fonts.googleapis.com/icon?family=Material+Icons"
 			rel="stylesheet"
 		/>
+		<script defer src="/build/bundle.js"></script>
 	</head>
 
-	<body></body>
+	<body>
+		<d-front-matter>
+			<script type="text/json">
+				{
+					"title": "Introduction to Autoencoders",
+					"description": "An intuitive walkthrough of a popular neural network architecture known as an autoencoder.",
+					"authors": [
+						{
+							"author": "Donny R. Bertucci",
+							"authorURL": "https://donnybertucci.com",
+							"affiliation": "Oregon State University",
+							"affiliationURL": "https://www.oregonstate.edu/"
+						}
+					],
+					"katex": {
+						"delimiters": [
+							{
+								"left": "$",
+								"right": "$",
+								"display": false
+							},
+							{
+								"left": "$$",
+								"right": "$$",
+								"display": true
+							}
+						]
+					}
+				}
+			</script>
+		</d-front-matter>
+
+		<d-title>
+			<h1>What are Autoencoders?</h1>
+			<p>
+				An intuitive walkthrough of a very popular and useful neural
+				network architecture: <b>autoencoders</b>.
+			</p>
+		</d-title>
+		<!-- 
+
+			http://www.vision.jhu.edu/teaching/learning/deeplearning19/assets/Baldi_Hornik-89.pdf
+			http://proceedings.mlr.press/v27/baldi12a/baldi12a.pdf
+			add this to the bibtex later
+		 -->
+
+		<d-byline></d-byline>
+		<d-abstract>
+			<p>
+				Autoencoders have many different applications, but most notably
+				they have been used as generative models and for dimensionality
+				reduction
+				<d-footnote
+					>Specific applications will be discussed in the
+					<a href="#overview">overview</a> section and throughout the
+					rest of the article.</d-footnote
+				>. Although autoencoders are used to learn complex
+				representations, the architecture is actually
+				<b> very simple</b>! Autoencoders just <i>deconstruct</i> down,
+				then learn to <i>reconstruct</i> back up. Before we go any
+				further, try one for yourself –
+				<b>Train an autoencoder on a 3D Dataset below in</b>
+				<a class="figure-number-text" href="#main">1</a>.
+			</p>
+		</d-abstract>
+		<div id="main"></div>
+
+		<d-article>
+			<p id="introduction">
+				The rest of this article will be focus on each part of
+				<a class="figure-number-text" href="#main">1</a>, explaining the
+				details in context to the visualization and applications
+				elsewhere. I will give a quick
+				<a href="#overview">overview</a> over the landscape of
+				autoencoder uses, then get into the specific
+				<a href="#structure">structure</a>:
+				<a href="#encoder">encoder</a>,
+				<a href="#latent">latent space</a>, and
+				<a href="#decoder">decoder</a>.
+			</p>
+			<h2 id="overview">Overview</h2>
+			<p id="overview-text">
+				Here will describe how they work as the whole from
+				<a class="figure-number-text" href="#main">1</a>, then get into
+				what the potential use cases and bring up mnist example so I can
+				use it in the future
+				<d-cite key="baldi1989neural, baldi2012autoencoders"></d-cite>.
+			</p>
+			<div id="test"></div>
+
+			<h2 id="structure">Structure</h2>
+			<h3 id="encoder">Encoder</h3>
+			Here I will talk about the encoder part of the autoencoder.
+			<h3 id="latent">Latent Space</h3>
+			<h3 id="decoder">Decoder</h3>
+			<h2 id="whats">What Next?</h2>
+			<!-- <figcaption style="grid-column: text / text">
+				this is a caption
+			</figcaption> -->
+		</d-article>
+
+		<d-appendix>
+			<h3>Acknowledgments</h3>
+			<p>
+				The outcome was heavily influenced and inspired by the amazing
+				works of
+				<a href="https://poloclub.github.io/ganlab/">GAN Lab</a> and
+				<a href="https://pair-code.github.io/understanding-umap/"
+					>Understanding UMAP</a
+				>
+				<d-cite key="kahng2018gan, coenen2019understanding"></d-cite>.
+				Visualizing 3D data reduced down to 2D
+				<d-cite key="coenen2019understanding"></d-cite> and the model
+				view and the layered distributions
+				<d-cite key="kahng2018gan"></d-cite>
+				were key ideas used in the main autoencoder visualization.
+			</p>
+
+			<p>
+				<b>Libraries used: </b>The 3D Scatter Plots were created using
+				<a href="https://github.com/PAIR-code/scatter-gl">ScatterGL</a>.
+				Autoencoder created and trained with
+				<a href="https://www.tensorflow.org/js">Tensorflow JS</a>.
+				Article formatted with the
+				<a href="https://github.com/distillpub/template"
+					>Distill HTML Template</a
+				>.
+			</p>
+
+			<h3>Author Contributions</h3>
+			<p>Put Contributions here</p>
+
+			<d-footnote-list></d-footnote-list>
+			<d-citation-list></d-citation-list>
+		</d-appendix>
+
+		<!-- bibliography will be inlined during Distill pipeline's pre-rendering -->
+		<d-bibliography src="bibliography.bib"></d-bibliography>
+	</body>
 </html>

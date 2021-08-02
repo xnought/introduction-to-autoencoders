@@ -2,27 +2,118 @@
 	import * as tf from "@tensorflow/tfjs";
 	import { arrayToTensor, logMemory, tensorToArray } from "./tool";
 	import { onMount } from "svelte";
+	import { tweened } from "svelte/motion";
+	import * as easings from "svelte/easing";
 	import Plot3D from "../projections/Plot3D.svelte";
-	import Plot2D from "../projections/Plot2D.svelte";
+	import Latent from "../projections/Latent.svelte";
+	import Model from "./Model.svelte";
+	function zeros3D(length: number) {
+		let result = [];
+		for (let i = 0; i < length; i++) {
+			result.push([0, 0, 0]);
+		}
+		return result;
+	}
+	function zeros2D(length: number) {
+		let result = [];
+		for (let i = 0; i < length; i++) {
+			result.push([0, 0]);
+		}
+		return result;
+	}
 
-	export let dataset: dataType;
-	let tensorDataset: tf.Tensor;
+	//directly from ganlab by minuk kahng
+	function zeroPad(n: number): string {
+		const pad = "000000";
+		return (pad + n)
+			.slice(-pad.length)
+			.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
+
+	interface IComposition {
+		encoderNeurons: number[];
+		decoderNeurons: number[];
+		activation: ActivationIdentifier;
+	}
+	function compose({
+		encoderNeurons,
+		decoderNeurons,
+		activation,
+	}: IComposition) {
+		let encoderLayers = [],
+			decoderLayers = [];
+
+		// encoder composition
+		// input layer
+		encoderLayers.push(
+			tf.layers.dense({
+				units: encoderNeurons[0],
+				inputShape: [3],
+				activation,
+			})
+		);
+		for (let layer = 1; layer < encoderNeurons.length; layer++) {
+			encoderLayers.push(
+				tf.layers.dense({
+					units: encoderNeurons[layer],
+					activation,
+				})
+			);
+		}
+		// latent output
+		encoderLayers.push(tf.layers.dense({ units: 2 }));
+
+		// decoder composition
+		decoderLayers.push(
+			tf.layers.dense({
+				units: decoderNeurons[0],
+				inputShape: [2],
+				activation,
+			})
+		);
+
+		for (let layer = 1; layer < decoderNeurons.length; layer++) {
+			decoderLayers.push(
+				tf.layers.dense({
+					units: decoderNeurons[layer],
+					activation,
+				})
+			);
+		}
+		//output layer
+		decoderLayers.push(
+			tf.layers.dense({
+				units: 3,
+			})
+		);
+		return { encoderLayers, decoderLayers };
+	}
 
 	class Autoencoder {
 		encoder: tf.Sequential;
 		decoder: tf.Sequential;
-		constructor(activation: ActivationIdentifier) {
+		encoderLayers: tf.layers.Layer[];
+		decoderLayers: tf.layers.Layer[];
+		constructor(
+			activation: ActivationIdentifier,
+			encoderNeurons: number[],
+			decoderNeurons: number[]
+		) {
+			const { decoderLayers, encoderLayers } = tf.tidy(() =>
+				compose({
+					encoderNeurons,
+					decoderNeurons,
+					activation,
+				})
+			);
+
+			this.encoderLayers = encoderLayers;
+			this.decoderLayers = decoderLayers;
 			this.encoder = tf.sequential({
-				layers: [
-					tf.layers.dense({ units: 2, inputShape: [3], activation }),
-					tf.layers.dense({ units: 2 }),
-				],
+				layers: this.encoderLayers,
 			});
 			this.decoder = tf.sequential({
-				layers: [
-					tf.layers.dense({ units: 2, inputShape: [2], activation }),
-					tf.layers.dense({ units: 3 }),
-				],
+				layers: this.decoderLayers,
 			});
 		}
 		predict(X: tf.Tensor) {
@@ -41,149 +132,484 @@
 		}
 	}
 
-	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
-	let outputLoss: number = 0;
+	// model config
+	export let datasets: dataType[];
+	export let dataset: dataType = datasets[2];
+	let model: Autoencoder;
+	let tensorDataset: tf.Tensor;
+	let loss: any;
+	let optim: tf.Optimizer;
+	let lr: number = 0.3;
+	let activation: ActivationIdentifier = "tanh";
 	let epoch: number = 0;
-	let preds: number[] = [];
-	let latent: number[][] = [];
-	let min: number[] = [];
-	let max: number[] = [];
 
+	// output items
+	let preds: Point3D[] = [];
+	let latent: Point2D[] = [];
+	let latentDelayed: Point2D[] = zeros2D(dataset.length);
+	let minDelayed: Point2D = [Infinity, Infinity];
+	let maxDelayed: Point2D = [0, 0];
+	let min: Point2D = [Infinity, Infinity];
+	let max: Point2D = [0, 0];
+	let pos: Point3D = [0.45, 0.9, 1.6];
+	let tensors = 0;
+	let printLoss: number;
+	let grads = zeros2D(dataset.length);
+	const lrOptions = [0.00001, 0.001, 0.01, 0.1, 0.3, 0.5, 1];
+	const actOptions = ["tanh", "sigmoid", "relu"];
+	let encoderNeurons = [64, 64, 64, 2];
+	let decoderNeurons = [2, 64, 64, 64];
+
+	let configTweened = {
+		delay: 0,
+		duration: 1000,
+		easing: easings.cubicOut,
+	};
+	// computed when we change dataset or config
+	$: gradsTweened = tweened(zeros2D(dataset.length), configTweened);
+	$: latentTweened = tweened(zeros2D(dataset.length), configTweened);
+	$: minTweened = tweened([0, 0], configTweened);
+	$: maxTweened = tweened([0, 0], configTweened);
+	$: predsTweened = tweened(zeros3D(dataset.length), configTweened);
+
+	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
+	let playing = false;
+	async function play() {
+		playing = true;
+		while (playing) {
+			// compute forward, backward, update
+			tf.tidy(() => {
+				// run every 100 because computationally expensive
+				const outputLoss = oneEpoch();
+				printLoss = getScalar(outputLoss);
+				getOuputs();
+				if (epoch % 100 == 0) {
+					grads = computeLatentGrads();
+					gradsTweened.set(grads);
+					latentTweened.set(latent);
+					minTweened.set(min);
+					maxTweened.set(max);
+					predsTweened.set(preds);
+				}
+			});
+			epoch++;
+			await timer(0);
+		}
+	}
+	function pause() {
+		playing = false;
+	}
+	function reset() {
+		model.dispose();
+		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
+		preds = [];
+		latent = [];
+		printLoss = undefined;
+		// gradsTweened.set(zeros2D(dataset.length));
+		// latentTweened.set(zeros2D(dataset.length));
+		// minTweened.set([-2, 2]);
+		// maxTweened.set([-2, 2]);
+		epoch = 0;
+	}
+	function oneEpoch() {
+		return optim.minimize(
+			() => loss(model.predict(tensorDataset), dataset),
+			true
+		);
+	}
+	function latentGrad(
+		inputs: number[],
+		weights: number[][],
+		dweights: number[][]
+	) {
+		const dinput1 =
+			(dweights[0][0] * weights[0][0]) / inputs[0] +
+			(dweights[1][0] * weights[1][0]) / inputs[0];
+		const dinput2 =
+			(dweights[0][1] * weights[0][1]) / inputs[1] +
+			(dweights[1][1] * weights[1][1]) / inputs[1];
+		return [dinput1, dinput2];
+	}
+	function tensorLatentGrad(
+		inputs: tf.Tensor,
+		weights: tf.Tensor,
+		dweights: tf.Tensor
+	) {
+		const dInputs = weights.mul(dweights).sum(0).div(inputs);
+		const gradDesc = inputs.sub(dInputs.mul(lr));
+		return gradDesc;
+	}
+	function computeLatentGrads() {
+		const optimCpy = tf.train.sgd(lr);
+		const latentGrads = [];
+		const weightsTensor = model.decoder.getWeights()[0];
+		for (const point of dataset) {
+			const wrappedPoint = [point];
+			const input = tf.tensor(wrappedPoint);
+
+			const latentOutputTensor = model.encoder.predict(input);
+			const grads = optimCpy.computeGradients(() =>
+				loss(model.decoder.predict(latentOutputTensor), wrappedPoint)
+			);
+			const weightGradsTensor = grads.grads[Object.keys(grads.grads)[0]];
+			latentGrads.push(
+				tensorToArray(
+					tensorLatentGrad(
+						//@ts-expect-error
+						latentOutputTensor,
+						weightsTensor,
+						weightGradsTensor
+					)
+				)[0]
+			);
+		}
+		optimCpy.dispose();
+		return latentGrads;
+	}
+	function getOuputs() {
+		// @ts-ignore
+		const encoded: tf.Tensor = model.encoder.predict(tensorDataset);
+		// @ts-ignore
+		const decoded: tf.Tensor = model.decoder.predict(encoded);
+
+		// @ts-ignore
+		latent = tensorToArray(encoded);
+		// @ts-ignore
+		preds = tensorToArray(decoded);
+		// @ts-ignore
+
+		const maxTensor = tf.max(encoded, 0);
+		const minTensor = tf.min(encoded, 0);
+		// @ts-ignore
+		max = tensorToArray(maxTensor);
+		// @ts-ignore
+		min = tensorToArray(minTensor);
+	}
+
+	let mounted = false;
 	onMount(async () => {
 		// define data
 		tensorDataset = arrayToTensor(dataset).variable();
-		console.log(dataset.length);
 		// define model
-		const model = new Autoencoder("tanh");
-		model.summary();
+		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
 		// define loss
-		const loss = tf.losses.meanSquaredError;
+		loss = tf.losses.meanSquaredError;
 		// define optimizer
-		const lr = 0.01;
-		const optim = tf.train.adam(lr);
-		function forwardBackward() {
-			return optim.minimize(
-				// @ts-ignore
-				() => loss(model.predict(tensorDataset), dataset),
-				true
-			);
-		}
-		let avg = 0;
-		const epochs = 1000;
-		for (let i = 0; i < epochs; i++) {
-			const start = performance.now();
-			const out = forwardBackward();
-			if (i % 25 == 0) {
-				outputLoss = out.dataSync()[0];
-			}
-			epoch = i;
-			tf.tidy(() => {
-				// @ts-ignore
-				const encoded: tf.Tensor = model.encoder.predict(tensorDataset);
-				// @ts-ignore
-				const decoded: tf.Tensor = model.decoder.predict(encoded);
-
-				// @ts-ignore
-				latent = tensorToArray(encoded);
-				// @ts-ignore
-				preds = tensorToArray(decoded);
-				// @ts-ignore
-
-				const maxTensor = tf.max(encoded, 0);
-				const minTensor = tf.min(encoded, 0);
-				// @ts-ignore
-				max = tensorToArray(maxTensor);
-				// @ts-ignore
-				min = tensorToArray(minTensor);
-			});
-			// @ts-ignore
-			await timer(0);
-			out.dispose();
-			const stop = performance.now();
-			avg += stop - start;
-		}
-		console.log(avg / epochs);
-		logMemory();
+		optim = tf.train.adam(lr);
+		mounted = true;
 	});
-
 	function clearGlobalMemory() {
 		clearTensorMemory(tensorDataset);
+	}
+	function getScalar(item: tf.Scalar) {
+		return item.dataSync()[0];
 	}
 	function clearTensorMemory(tensor: tf.Tensor) {
 		if (!tensor.isDisposed) {
 			tensor.dispose();
 		}
 	}
-	let pos: [number, number, number] = [0.45, 0.9, 1.6];
+	function setOptimizer(lr: number) {
+		optim.dispose();
+		optim = tf.train.adam(lr);
+	}
+	function setModel(activation: ActivationIdentifier) {
+		model.dispose();
+		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
+	}
+
+	let inputColor = "hsla(0, 0%, 0%, 0.2)";
+	let latentColor = "hsla(194, 91%, 45%, 1)";
+	let outputColor = "hsla(248, 49%, 68%, 0.5)";
+	let encoderFill = "";
+	let decoderFill = "";
+	let isRunning = false;
+
+	// computed properties
+	$: optionsEnabled = epoch == 0 && printLoss == undefined;
+	$: {
+		if (mounted) {
+			setOptimizer(lr);
+		}
+	}
+	$: {
+		if (mounted) {
+			setModel(activation);
+		}
+	}
 </script>
 
-<!-- <div>Loss: {outputLoss}</div>
-<div>Epoch: {epoch}</div> -->
+<!-- <div>Epoch={epoch}, Loss={printLoss}</div>
+<button on:click={async () => await play()}>Play</button>
+<button on:click={() => pause()}>Pause</button>
+<button on:click={() => reset()}>Reset</button>
+<button on:click={() => (tensors = tf.memory().numTensors)}
+	>Num Tensors={tensors}</button
+> -->
+
+<div id="control-center">
+	<div id="datasets">
+		{#each datasets as ds, i}
+			<div
+				class="dataset"
+				on:click={() => {
+					dataset = [...ds];
+				}}
+			>
+				{i}
+			</div>
+		{/each}
+	</div>
+	<div id="controls">
+		<div class="data-controls">
+			<div class="play-controls">
+				<button
+					class="play-pause"
+					on:click={async () => {
+						isRunning = !isRunning;
+						if (isRunning) {
+							await play();
+						} else if (!isRunning) {
+							pause();
+						}
+					}}
+				>
+					{#if isRunning}
+						<i class="material-icons">pause</i>
+					{:else}
+						<i class="material-icons">play_arrow</i>
+					{/if}
+				</button>
+				<button
+					class="restart"
+					on:click={() => {
+						isRunning = false;
+						reset();
+					}}
+					disabled={isRunning || epoch == 0}
+				>
+					<i class="material-icons">refresh</i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div id="metrics">
+		<div style="font-size: 16px; font-weight: 250;">Epochs</div>
+		<div style="font-size: 25px;">{zeroPad(epoch)}</div>
+	</div>
+	<div id="loss">
+		<div style="font-size: 16px; font-weight: 250;">Loss</div>
+		<div style="font-size: 25px;">
+			{printLoss ? printLoss.toFixed(6) : "null"}
+		</div>
+	</div>
+	<div id="custom">
+		<div id="lr">
+			<div style="font-size: 16px; font-weight: 250;">Learning Rate</div>
+			<select bind:value={lr} disabled={!optionsEnabled}>
+				{#each lrOptions as option}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
+		</div>
+		<div id="activation">
+			<div style="font-size: 16px; font-weight: 250;">Activation</div>
+			<select bind:value={activation} disabled={!optionsEnabled}>
+				{#each actOptions as option}
+					<option value={option}>{option}</option>
+				{/each}
+			</select>
+		</div>
+	</div>
+</div>
 <div class="container">
-	<Plot3D
-		data3D={dataset}
-		on:hover={(e) => {}}
-		on:drag={(e) => {
-			const { x, y, z } = e.detail.position;
-			pos = [x, y, z];
-		}}
-		width="200px"
-		height="200px"
-		hoveredPointIndex={-1}
-		title={"Inputs"}
-		axesVisible={false}
-		style="border: 3px violet solid; border-radius: 5px;"
-		colors={["#000000"]}
-		{pos}
-	/>
-	<Plot3D
-		data3D={preds}
-		on:hover={(e) => {}}
-		on:drag={(e) => {
-			const { x, y, z } = e.detail.position;
-			pos = [x, y, z];
-		}}
-		width="200px"
-		height="200px"
-		hoveredPointIndex={-1}
-		title={"Reconstructed Inputs"}
-		axesVisible={false}
-		style="border: 3px coral solid; border-radius: 5px;"
-		colors={[]}
-		{pos}
-	/>
-	<Plot3D
-		data3D={[...dataset, ...preds]}
-		lenData={dataset.length}
-		on:hover={(e) => {}}
-		on:drag={(e) => {
-			const { x, y, z } = e.detail.position;
-			pos = [x, y, z];
-		}}
-		width="400px"
-		height="400px"
-		hoveredPointIndex={-1}
-		title={"Reconstructed Inputs"}
-		axesVisible
-		style="border: 3px coral solid; border-radius: 5px;"
-		colors={["#000000"]}
-		{pos}
-	/>
-	<Plot2D
-		data2D={latent}
-		width={100}
-		height={100}
-		color="#9F9DE4"
-		radius={1}
-		{min}
-		{max}
-	/>
+	<div id="model-view">
+		<Model
+			inputs={dataset}
+			minLatent={min}
+			{latent}
+			maxLatent={max}
+			outputs={preds}
+			axesVisible
+			animating={playing}
+			globalPosition={pos}
+			on:drag={(e) => {
+				const { x, y, z } = e.detail.position;
+				pos = [x, y, z];
+			}}
+			{inputColor}
+		/>
+	</div>
+	<div class="divider" />
+	<div id="graphs">
+		<div id="layered-view">
+			<div style="position: relative;">
+				<div class="colored" style="color: black; font-weight: normal;">
+					Layered
+				</div>
+				<div class="colored" style="color: {inputColor};">
+					3D input Data
+				</div>
+				<div class="colored" style="color: black; font-weight: normal;">
+					and
+				</div>
+				<div class="colored" style="color: {outputColor};">
+					Reconstruction
+				</div>
+				<!-- <div class="colored" style="color: {outputColor};">
+					<span class="material-icons">3d_rotation</span>
+					<img src="pointer.svg" />
+				</div> -->
+
+				<div class="colored" style="color: {inputColor};">
+					<span class="material-icons">3d_rotation</span>
+				</div>
+			</div>
+			<div>
+				<Plot3D
+					data3D={[...dataset, ...$predsTweened]}
+					lenData={dataset.length}
+					on:hover={(e) => {}}
+					on:drag={(e) => {
+						const { x, y, z } = e.detail.position;
+						pos = [x, y, z];
+					}}
+					width="400px"
+					height="400px"
+					hoveredPointIndex={-1}
+					title={"Reconstructed Inputs"}
+					axesVisible
+					style="border: 2px rgba(0, 0, 0, 0.1) solid; border-radius: 3px;"
+					colors={[inputColor, outputColor]}
+					{pos}
+				/>
+			</div>
+		</div>
+		<div id="latent-grads">
+			<div>
+				<div
+					class="colored"
+					style="color: {latentColor};font-size: 15px;"
+				>
+					Latent Space
+				</div>
+				with
+				<div class="colored" style="color: #A5DAEF;font-size: 15px;">
+					Opposite Gradients
+				</div>
+			</div>
+			<div>
+				<Latent
+					grads={$gradsTweened}
+					points={$latentTweened}
+					min={$minTweened}
+					max={$maxTweened}
+				/>
+			</div>
+		</div>
+	</div>
 </div>
 
 <style lang="scss">
+	$divider-color: hsla(0, 0%, 0%, 0.1);
+	#control-center {
+		height: 60px;
+		display: flex;
+		align-items: center;
+		margin-left: 150px;
+		// border-bottom: 1px $divider-color solid;
+		width: 800px;
+
+		#datasets {
+			display: flex;
+			.dataset {
+				height: 40px;
+				width: 40px;
+				border: 1px solid black;
+				margin: 5px;
+			}
+			margin-right: 50px;
+		}
+		#controls {
+			button {
+				cursor: pointer;
+				outline: none;
+				border-radius: 50%;
+				background: steelblue;
+				color: white;
+				width: 50px;
+				margin-right: 5px;
+				padding-top: 50px;
+				padding-bottom: 0;
+				border: none;
+				position: relative;
+			}
+			button:disabled {
+				background: lightgray;
+				cursor: default;
+			}
+			i {
+				display: block;
+				position: absolute;
+				top: 50%;
+				left: 0;
+				width: 100%;
+				height: 36px;
+				font-size: 30px;
+				line-height: 0;
+			}
+		}
+		#metrics {
+			width: 100px;
+			margin-left: 20px;
+		}
+		#loss {
+			width: 100px;
+			margin-left: 20px;
+		}
+		#custom {
+			margin-left: 20px;
+			display: flex;
+			#lr {
+			}
+			#activation {
+				margin-left: 20px;
+			}
+		}
+	}
 	.container {
-		// width: 300px;
-		// height: 100px;
-		// color: rgba(0, 0, 0, 0.81);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		border-top: 1px solid $divider-color;
+		user-select: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+
+		#model-view {
+		}
+		.divider {
+			margin-right: 40px;
+			margin-left: 20px;
+			width: 1px;
+			height: 800px;
+			background-color: $divider-color;
+		}
+		#graphs {
+			#latent-grads {
+				margin-top: 25px;
+				// width: 300px;
+				// height: 300px;
+				// background: lightgrey;
+				// border: 1px black solid;
+			}
+		}
+	}
+	.colored {
+		display: inline;
+		font-size: 20px;
+		font-weight: 500;
 	}
 </style>

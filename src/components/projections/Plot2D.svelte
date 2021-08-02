@@ -3,15 +3,15 @@
 	import { scaleLinear } from "d3";
 	const PI2 = 2 * Math.PI;
 
-	export let data2D: number[][] = [
+	export let data2D: Point2D[] = [
 		[0, 0.1],
 		[-0.5, 0.5],
 		[0.1, 0.2],
 	];
 	export let width = 250;
 	export let height = 250;
-	export let min: number[];
-	export let max: number[];
+	export let min: Point2D;
+	export let max: Point2D;
 	export let color = "black";
 	export let radius = 2;
 	export let padding = 0.1;
