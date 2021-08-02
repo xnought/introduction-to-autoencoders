@@ -3,6 +3,7 @@
 	import { arrayToTensor, logMemory, tensorToArray } from "./tool";
 	import { onMount } from "svelte";
 	import { tweened } from "svelte/motion";
+	import * as d3 from "d3";
 	import * as easings from "svelte/easing";
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Latent from "../projections/Latent.svelte";
@@ -134,7 +135,7 @@
 
 	// model config
 	export let datasets: dataType[];
-	export let dataset: dataType = datasets[2];
+	export let dataset: dataType = datasets[3];
 	let model: Autoencoder;
 	let tensorDataset: tf.Tensor;
 	let loss: any;
@@ -482,6 +483,10 @@
 					style="border: 2px rgba(0, 0, 0, 0.1) solid; border-radius: 3px;"
 					colors={[inputColor, outputColor]}
 					{pos}
+					colorFunc={(index) =>
+						d3.interpolateSpectral(
+							(index % dataset.length) / (dataset.length - 1)
+						)}
 				/>
 			</div>
 		</div>
