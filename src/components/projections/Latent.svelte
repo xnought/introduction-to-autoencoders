@@ -23,8 +23,8 @@
 		[0.5, 0.2],
 	];
 
-	let xScale = d3.scaleLinear().domain([-1, 1]).range([0, width]);
-	let yScale = d3.scaleLinear().domain([-1, 1]).range([height, 0]);
+	let xScale = d3.scaleLinear().domain([-2, 2]).range([0, width]);
+	let yScale = d3.scaleLinear().domain([-2, 2]).range([height, 0]);
 
 	$: {
 		updateAxes(min, max);
@@ -56,7 +56,7 @@
 			grad={grads[index]}
 			{xScale}
 			{yScale}
-			color={d3.color(colorIndices[index]).brighter(2)}
+			color={d3.color(colorIndices[index]).brighter(0.2)}
 		/>
 		<circle
 			cx={xScale(point[0])}

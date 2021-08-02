@@ -170,8 +170,8 @@
 	let grads = zeros2D(dataset.length);
 	const lrOptions = [0.00001, 0.001, 0.01, 0.1, 0.3, 0.5, 1];
 	const actOptions = ["tanh", "sigmoid", "relu"];
-	let encoderNeurons = [64, 64, 64, 2];
-	let decoderNeurons = [2, 64, 64, 64];
+	let encoderNeurons = [64, 64, 2];
+	let decoderNeurons = [2, 64, 64];
 
 	let configTweened = {
 		delay: 0,
@@ -210,7 +210,7 @@
 				const outputLoss = oneEpoch();
 				printLoss = getScalar(outputLoss);
 				getOuputs();
-				if (epoch % 100 == 0) {
+				if (epoch % 50 == 0) {
 					grads = computeLatentGrads();
 					gradsTweened.set(grads);
 					latentTweened.set(latent);
