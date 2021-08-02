@@ -156,19 +156,18 @@
 	let grads = zeros2D(dataset.length);
 	const lrOptions = [0.001, 0.01, 0.1, 0.3, 1];
 	const actOptions = ["tanh", "sigmoid", "relu"];
-	let encoderNeurons = [3, 2];
-	let decoderNeurons = [2, 3];
+	let encoderNeurons = [2];
+	let decoderNeurons = [2];
 
 	let configTweened = {
 		delay: 0,
 		duration: 1000,
 		easing: easings.cubicOut,
 	};
-	const gradsTweened = tweened(grads, configTweened);
-	const latentTweened = tweened(latentDelayed, configTweened);
-	const minTweened = tweened(minDelayed, configTweened);
-	const maxTweened = tweened(maxDelayed, configTweened);
-	const predsTweened = tweened(zeros3D(dataset.length), configTweened);
+	const gradsTweened = tweened(zeros2D(dataset.length), configTweened);
+	const latentTweened = tweened(zeros2D(dataset.length), configTweened);
+	const minTweened = tweened([0, 0], configTweened);
+	const maxTweened = tweened([0, 0], configTweened);
 
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let playing = false;
@@ -183,15 +182,10 @@
 				getOuputs();
 				if (epoch % 100 == 0) {
 					grads = computeLatentGrads();
-					latentDelayed = [...latent];
-					minDelayed = min;
-					maxDelayed = max;
-
 					gradsTweened.set(grads);
 					latentTweened.set(latent);
-					minTweened.set(minDelayed);
-					maxTweened.set(maxDelayed);
-					predsTweened.set(preds);
+					minTweened.set(min);
+					maxTweened.set(max);
 				}
 			});
 			epoch++;
@@ -469,7 +463,7 @@
 			</div>
 			<div>
 				<Plot3D
-					data3D={[...dataset, ...$predsTweened]}
+					data3D={[...dataset, ...preds]}
 					lenData={dataset.length}
 					on:hover={(e) => {}}
 					on:drag={(e) => {
