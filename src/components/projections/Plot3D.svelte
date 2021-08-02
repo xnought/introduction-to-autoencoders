@@ -19,7 +19,7 @@
 	export let axesVisible = true;
 	export let style = "";
 	export let isOrbiting = false;
-	export let colorFunc: (index?: number) => string = () => "";
+	export let colorIndices: string[];
 
 	const dispatch = createEventDispatcher();
 	let container: HTMLElement;
@@ -67,8 +67,8 @@
 		});
 		window["scatterGLObj"] = scatterGL;
 		scatterGL.setPointColorer((i) => {
-			// const colorIndex = colorIndices[i];
-			return i < lenData ? colors[0] : colorFunc(i);
+			const colorIndex = colorIndices[i];
+			return colorIndex;
 		});
 		//@ts-ignore
 		scatterGL.render(dataset);

@@ -8,6 +8,18 @@
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Latent from "../projections/Latent.svelte";
 	import Model from "./Model.svelte";
+
+	function genColorArray(
+		datasetLength: number,
+		callback: (index?: number) => string
+	) {
+		let colorArray = new Array(datasetLength);
+		for (let i = 0; i < datasetLength; i++) {
+			colorArray[i] = callback(i);
+		}
+		return colorArray;
+	}
+
 	function zeros3D(length: number) {
 		let result = [];
 		for (let i = 0; i < length; i++) {
@@ -172,6 +184,20 @@
 	$: minTweened = tweened([0, 0], configTweened);
 	$: maxTweened = tweened([0, 0], configTweened);
 	$: predsTweened = tweened(zeros3D(dataset.length), configTweened);
+	// colors computed
+	$: inputColors = genColorArray(
+		dataset.length,
+		() => "hsla(0, 0%, 0%, 0.1)"
+	);
+	$: outputColors = genColorArray(dataset.length, (i) =>
+		d3.interpolateSpectral(i / (dataset.length - 1))
+	);
+	$: {
+		console.log(inputColors);
+	}
+	$: {
+		console.log(outputColors);
+	}
 
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let playing = false;
@@ -413,14 +439,14 @@
 				{/each}
 			</select>
 		</div>
-		<div id="activation">
+		<!-- <div id="activation">
 			<div style="font-size: 16px; font-weight: 250;">Activation</div>
 			<select bind:value={activation} disabled={!optionsEnabled}>
 				{#each actOptions as option}
 					<option value={option}>{option}</option>
 				{/each}
 			</select>
-		</div>
+		</div> -->
 	</div>
 </div>
 <div class="container">
@@ -439,6 +465,8 @@
 				pos = [x, y, z];
 			}}
 			{inputColor}
+			{inputColors}
+			{outputColors}
 		/>
 	</div>
 	<div class="divider" />
@@ -483,10 +511,7 @@
 					style="border: 2px rgba(0, 0, 0, 0.1) solid; border-radius: 3px;"
 					colors={[inputColor, outputColor]}
 					{pos}
-					colorFunc={(index) =>
-						d3.interpolateSpectral(
-							(index % dataset.length) / (dataset.length - 1)
-						)}
+					colorIndices={[...inputColors, ...outputColors]}
 				/>
 			</div>
 		</div>
@@ -509,6 +534,7 @@
 					points={$latentTweened}
 					min={$minTweened}
 					max={$maxTweened}
+					colorIndices={outputColors}
 				/>
 			</div>
 		</div>

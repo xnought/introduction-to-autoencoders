@@ -4,6 +4,7 @@
 	import { onMount } from "svelte";
 
 	/* Put stuff here */
+	export let colorIndices: string[];
 	export let padding = 0.1;
 	export let height = 200;
 	export let width = 200;
@@ -50,8 +51,19 @@
 	style="border: {borderWidth}px {borderColor} solid; border-radius: {borderRadius}px;"
 >
 	{#each points as point, index}
-		<Triangle {point} grad={grads[index]} {xScale} {yScale} />
-		<circle cx={xScale(point[0])} cy={yScale(point[1])} r={3} {fill} />
+		<Triangle
+			{point}
+			grad={grads[index]}
+			{xScale}
+			{yScale}
+			color={d3.color(colorIndices[index]).brighter(2)}
+		/>
+		<circle
+			cx={xScale(point[0])}
+			cy={yScale(point[1])}
+			r={3}
+			fill={colorIndices[index]}
+		/>
 	{/each}
 </svg>
 

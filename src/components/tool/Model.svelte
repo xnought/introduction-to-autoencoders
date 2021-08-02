@@ -5,6 +5,8 @@
 	import Trapezoid from "./Trapezoid.svelte";
 
 	const dispatch = createEventDispatcher();
+	export let inputColors: string[];
+	export let outputColors: string[];
 
 	export let inputs: Point3D[] = [];
 	export let latent: Point2D[] = [];
@@ -54,6 +56,7 @@
 			colors={[inputColor]}
 			pos={globalPosition}
 			{axesVisible}
+			colorIndices={inputColors}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {inputColor};">
@@ -89,6 +92,7 @@
 			radius={1}
 			min={minLatent}
 			max={maxLatent}
+			colorIndices={outputColors}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {latentColor}; font-size: 11px;">
@@ -126,6 +130,7 @@
 			colors={[outputColor]}
 			pos={globalPosition}
 			{axesVisible}
+			colorIndices={outputColors}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {outputColor};">

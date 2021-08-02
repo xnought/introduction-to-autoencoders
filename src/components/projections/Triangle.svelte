@@ -55,4 +55,4 @@
 	}
 </script>
 
-<polygon fill="#a5daef" {points} />
+<polygon fill={color} {points} />

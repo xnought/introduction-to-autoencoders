@@ -14,7 +14,8 @@
 	export let max: Point2D;
 	export let color = "black";
 	export let radius = 2;
-	export let padding = 0.1;
+	export let padding = 0.5;
+	export let colorIndices: string[];
 
 	let xScale = scaleLinear().domain([-2, 2]).range([0, width]);
 	let yScale = scaleLinear().domain([-2, 2]).range([height, 0]);
@@ -50,7 +51,9 @@
 	}
 	function render2D(data2D: number[][]) {
 		clearCanvas();
-		for (const coord of data2D) {
+		for (let i = 0; i < data2D.length; i++) {
+			const coord = data2D[i];
+			ctx.fillStyle = colorIndices[i];
 			const [x, y] = coord;
 			plotPoint([xScale(x), yScale(y)], radius);
 		}
