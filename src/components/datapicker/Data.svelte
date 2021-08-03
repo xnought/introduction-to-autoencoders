@@ -53,7 +53,7 @@
 	}
 	.demo-data.selected::after {
 		content: "";
-		border: 2px solid rgba(70, 130, 180, 0.8);
+		border: 2px solid black;
 		width: 100%;
 		height: 100%;
 		position: absolute;

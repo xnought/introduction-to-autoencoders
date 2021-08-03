@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as tf from "@tensorflow/tfjs";
-	import { arrayToTensor, logMemory, tensorToArray } from "./tool";
+	import { arrayToTensor, tensorToArray } from "./tool";
 	import { onMount } from "svelte";
 	import { tweened } from "svelte/motion";
 	import * as d3 from "d3";
@@ -157,6 +157,7 @@
 	let lr: number = 0.01;
 	let activation: ActivationIdentifier = "tanh";
 	let epoch: number = 0;
+	let maxLoss = 0;
 
 	// output items
 	let preds: Point3D[] = [];
@@ -185,7 +186,6 @@
 				.color(d3.interpolateSpectral(i / (oppgrads.length - 1)))
 				.darker(0.2)
 		);
-	console.log(oppgradsColors);
 
 	let isRunning = false;
 
@@ -217,6 +217,9 @@
 				// run every 100 because computationally expensive
 				const outputLoss = oneEpoch();
 				printLoss = getScalar(outputLoss);
+				if (printLoss > maxLoss) {
+					maxLoss = printLoss;
+				}
 				getOuputs();
 				if (epoch % 50 == 0) {
 					grads = computeLatentGrads();
@@ -236,6 +239,7 @@
 	}
 	function reset() {
 		isRunning = false;
+		maxLoss = 0;
 		model.dispose();
 		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
 		preds = [];
@@ -385,6 +389,24 @@
 
 <div class="container">
 	<div id="model-view">
+		<div style="margin-bottom: 60px;">
+			<div
+				class="colored"
+				style="margin-left: 25px;font-size: 30px; color: {clearText}"
+			>
+				A.
+			</div>
+			<div class="colored">Pick a Dataset</div>
+			<div
+				class="colored"
+				style="margin-left: 50px; font-size: 30px; color: {clearText}"
+			>
+				B.
+			</div>
+			<div class="colored" style="color: steelblue;">
+				Train Autoencoder
+			</div>
+		</div>
 		<div id="control-center">
 			<div style="width: 150px">
 				{#each datasets as ds, i}
@@ -446,7 +468,7 @@
 			<div id="loss">
 				<div style="font-size: 16px; font-weight: 250;">Loss</div>
 				<div style="font-size: 25px;">
-					{printLoss ? printLoss.toFixed(6) : "null"}
+					{printLoss ? printLoss.toFixed(6) : "..."}
 				</div>
 			</div>
 			<div id="custom">
@@ -523,9 +545,9 @@
 					<img src="pointer.svg" />
 				</div> -->
 
-				<div class="colored" style="color: {inputColor};">
+				<!-- <div class="colored" style="color: {inputColor};">
 					<span class="material-icons">3d_rotation</span>
-				</div>
+				</div> -->
 			</div>
 			<div>
 				<Plot3D
@@ -534,7 +556,7 @@
 						...(preds.length > 0 ? $predsTweened : []),
 					]}
 					on:hover={(e) => {
-						console.log(e.detail % dataset.length);
+						globalHover = e.detail % dataset.length;
 					}}
 					on:drag={(e) => {
 						const { x, y, z } = e.detail.position;
@@ -542,9 +564,9 @@
 					}}
 					width="400px"
 					height="400px"
-					hoveredPointIndex={-1}
+					hoveredPointIndex={globalHover}
 					axesVisible
-					style="border: 2px rgba(0, 0, 0, 0.1) solid; border-radius: 3px;"
+					style="border: 3px rgba(0, 0, 0, 0.1) solid; border-radius: 3px;"
 					{pos}
 					colorIndices={[...inputColors, ...outputColors]}
 					pointConfig={{
@@ -597,7 +619,7 @@
 <style lang="scss">
 	$divider-color: hsla(0, 0%, 0%, 0.1);
 	#control-center {
-		height: 60px;
+		height: 40px;
 		display: flex;
 		align-items: center;
 		margin-bottom: 150px;
@@ -617,7 +639,7 @@
 			margin-right: 50px;
 		}
 		#controls {
-			margin-left: 25px;
+			margin-left: 60px;
 			button {
 				cursor: pointer;
 				outline: none;

@@ -45,10 +45,8 @@
 		for (const dsn of datasetNames) {
 			const data = await getData(dsn + ".json");
 			datasets.push(data);
-			console.log(dsn, data.length);
 		}
 		loaded = true;
-		console.log(datasets);
 	});
 </script>
 
