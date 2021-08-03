@@ -235,6 +235,7 @@
 		playing = false;
 	}
 	function reset() {
+		isRunning = false;
 		model.dispose();
 		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
 		preds = [];
@@ -371,6 +372,7 @@
 		}
 	}
 	let selectedDatasetIndex = 0;
+	let globalHover = -1;
 </script>
 
 <!-- <div>Epoch={epoch}, Loss={printLoss}</div>
@@ -390,6 +392,7 @@
 						image="prev/{datasetNames[i]}.png"
 						onClick={() => {
 							selectedDatasetIndex = i;
+							reset();
 							setDataset(selectedDatasetIndex);
 						}}
 						selected={selectedDatasetIndex == i}
@@ -427,7 +430,6 @@
 						<button
 							class="restart"
 							on:click={() => {
-								isRunning = false;
 								reset();
 							}}
 							disabled={isRunning || epoch == 0}
@@ -531,8 +533,9 @@
 						...dataset,
 						...(preds.length > 0 ? $predsTweened : []),
 					]}
-					lenData={dataset.length}
-					on:hover={(e) => {}}
+					on:hover={(e) => {
+						console.log(e.detail % dataset.length);
+					}}
 					on:drag={(e) => {
 						const { x, y, z } = e.detail.position;
 						pos = [x, y, z];
@@ -540,12 +543,13 @@
 					width="400px"
 					height="400px"
 					hoveredPointIndex={-1}
-					title={"Reconstructed Inputs"}
 					axesVisible
 					style="border: 2px rgba(0, 0, 0, 0.1) solid; border-radius: 3px;"
-					colors={[inputColor, outputColor]}
 					{pos}
 					colorIndices={[...inputColors, ...outputColors]}
+					pointConfig={{
+						colorHover: clearText,
+					}}
 				/>
 			</div>
 		</div>

@@ -30,8 +30,6 @@
 	function receiveAndSetGlobalHover(e: CustomEvent<number>) {
 		globalHover = e.detail;
 	}
-
-	// fix this later to include mutliple colors labels for data
 	export let inputColor = "hsla(0, 0%, 0%, 0.3)";
 	export let latentColor = "hsla(194, 91%, 45%, 0.5)";
 	export let encoderFill = "hsla(194, 74%, 73%, 1)";
@@ -42,6 +40,12 @@
 	export let borderRadius = 3;
 	export let borderWidth = 3;
 	export let scaleDefault = 0.5;
+	// fix this later to include mutliple colors labels for data
+	export let pointConfig = {
+		scaleDefault,
+		scaleHover: 1.5,
+		colorHover: "hsla(0, 0%, 0%, 0.3)",
+	};
 </script>
 
 <div class="container">
@@ -56,11 +60,10 @@
 			width="165px"
 			height="165px"
 			hoveredPointIndex={globalHover}
-			colors={[inputColor]}
 			pos={globalPosition}
 			axesVisible={false}
 			colorIndices={inputColors}
-			{scaleDefault}
+			{pointConfig}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {encoderStroke};">
@@ -97,6 +100,8 @@
 			min={minLatent}
 			max={maxLatent}
 			colorIndices={outputColors}
+			on:hover={(e) => (globalHover = e.detail)}
+			hoverPointIndex={globalHover}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {latentColor}; font-size: 11px;">
@@ -131,11 +136,10 @@
 			width="165px"
 			height="165px"
 			hoveredPointIndex={globalHover}
-			colors={[outputColor]}
 			pos={globalPosition}
 			axesVisible={false}
 			colorIndices={outputColors}
-			{scaleDefault}
+			{pointConfig}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {outputColor};">

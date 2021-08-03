@@ -9,10 +9,8 @@
 	function toScale(point: Point2D): Point2D {
 		return [xScale(point[0]), yScale(point[1])];
 	}
-	function dist(point1: Point2D, point2: Point2D) {
-		return Math.sqrt(
-			(point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
-		);
+	function shitversionofdist(point1: Point2D, point2: Point2D) {
+		return (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2;
 	}
 	function equidistant(point: Point2D, grad: Point2D, radius: number) {
 		let additional: Point2D[] = [
@@ -23,7 +21,7 @@
 		];
 		let distances = additional.map((point, index) => ({
 			index,
-			distance: dist(point, grad),
+			distance: shitversionofdist(point, grad),
 		}));
 		let sortedDistances = distances.sort((a, b) => a.distance - b.distance);
 		if (point[0] == grad[0] || point[1] == grad[1]) {
