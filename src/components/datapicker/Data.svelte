@@ -1,0 +1,83 @@
+<script lang="ts">
+	/* Copyright 2019 Google LLC All Rights Reserved.
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+		http://www.apache.org/licenses/LICENSE-2.0
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+	==============================================================================*/
+	export let onClick: () => void;
+	export let selected = false;
+	export let image: string;
+</script>
+
+<div class="demo-data {selected ? 'selected' : ''}" on:click={onClick}>
+	<img width="40px" height="40px" src={image} alt={image} />
+</div>
+
+<style>
+	.demo-data {
+		cursor: pointer;
+		position: relative;
+		font-size: 10px;
+		line-height: 1.2em;
+		box-sizing: border-box;
+		float: left;
+		margin: 2px;
+		padding: 4px;
+		background: white;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 4px;
+		box-shadow: 0 0 3px rgba(0, 0, 0, 0.08);
+	}
+	@media (min-width: 480px) {
+		.demo-data {
+			/* width: calc(25% - 8px); */
+			padding: 8px;
+			margin: 4px;
+		}
+	}
+	@media (min-width: 768px) {
+		.demo-data {
+			/* width: calc(16.5% - 8px); */
+			padding: 8px;
+			margin: 4px;
+		}
+	}
+	.demo-data:hover {
+		border: 1px solid rgba(0, 0, 0, 0.2);
+	}
+	.demo-data.selected::after {
+		content: "";
+		border: 2px solid rgba(70, 130, 180, 0.8);
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		box-sizing: border-box;
+		border-radius: 4px;
+	}
+	.demo-data:hover img {
+		opacity: 1;
+	}
+	.demo-data img {
+		/* width: 100%; */
+		opacity: 0.3;
+	}
+	.demo-data.selected img {
+		opacity: 1;
+	}
+	img {
+		-drag: none;
+		user-select: none;
+		-moz-user-select: none;
+		-webkit-user-drag: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+</style>

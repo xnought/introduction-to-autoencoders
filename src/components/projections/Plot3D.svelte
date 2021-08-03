@@ -14,9 +14,9 @@
 	export let lenData = 156;
 	export let width = "250px";
 	export let height = "250px";
-	export let zoom = 0.9;
+	export let zoom = 0.6;
 	export let scaleDefault = 1;
-	export let axesVisible = true;
+	export let axesVisible = false;
 	export let style = "";
 	export let isOrbiting = false;
 	export let colorIndices: string[];

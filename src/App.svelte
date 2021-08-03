@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { DataStorage } from "@tensorflow/tfjs-core";
+
 	import { onMount } from "svelte";
 	import { getData } from "./app";
 	import Tool from "./components/tool/Tool.svelte";
@@ -36,18 +38,14 @@
 	// 	}
 	// }
 
-	const dataSetNames = [
-		"spiral.json",
-		"saddle.json",
-		"trefoilknot.json",
-		"twistedcubic.json",
-	];
+	const datasetNames = ["circle", "sin", "spiral", "twistedcubic"];
 	let datasets: any[] = [];
 	let loaded = false;
 	onMount(async () => {
-		for (const dsn of dataSetNames) {
-			const data = await getData(dsn);
+		for (const dsn of datasetNames) {
+			const data = await getData(dsn + ".json");
 			datasets.push(data);
+			console.log(dsn, data.length);
 		}
 		loaded = true;
 		console.log(datasets);
@@ -59,7 +57,7 @@
 </svelte:head>
 <div id="main-tool">
 	{#if loaded}
-		<Tool {datasets} />
+		<Tool {datasets} {datasetNames} />
 	{:else}
 		<h1>Loading</h1>
 	{/if}

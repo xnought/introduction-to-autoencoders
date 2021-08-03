@@ -36,15 +36,18 @@
 	export let latentColor = "hsla(194, 91%, 45%, 0.5)";
 	export let encoderFill = "hsla(194, 74%, 73%, 1)";
 	export let decoderFill = "hsla(249, 48%, 84%, 1)";
+	export let encoderStroke;
+	export let decoderStroke;
 	export let outputColor = "hsla(249, 48%, 84%, 0.5)";
 	export let borderRadius = 3;
 	export let borderWidth = 3;
+	export let scaleDefault = 0.5;
 </script>
 
 <div class="container">
 	<div
 		class="input"
-		style="border: {borderWidth}px {inputColor} solid; border-radius: {borderRadius}px;"
+		style="border: {borderWidth}px {encoderStroke} solid; border-radius: {borderRadius}px;"
 	>
 		<Plot3D
 			data3D={inputs}
@@ -55,11 +58,12 @@
 			hoveredPointIndex={globalHover}
 			colors={[inputColor]}
 			pos={globalPosition}
-			{axesVisible}
+			axesVisible={false}
 			colorIndices={inputColors}
+			{scaleDefault}
 		/>
 		<div class="text-center">
-			<div class="colored" style="color: {inputColor};">
+			<div class="colored" style="color: {encoderStroke};">
 				3D Input Data
 			</div>
 		</div>
@@ -71,7 +75,7 @@
 			leftVerticalWidth={100}
 			rightVerticalWidth={50}
 			fill={encoderFill}
-			stroke={latentColor}
+			stroke={encoderStroke}
 			{animating}
 		/>
 		<div class="text-center">
@@ -107,7 +111,7 @@
 			leftVerticalWidth={50}
 			rightVerticalWidth={100}
 			fill={decoderFill}
-			stroke={outputColor}
+			stroke={decoderStroke}
 			{animating}
 		/>
 		<div class="text-center">
@@ -129,8 +133,9 @@
 			hoveredPointIndex={globalHover}
 			colors={[outputColor]}
 			pos={globalPosition}
-			{axesVisible}
+			axesVisible={false}
 			colorIndices={outputColors}
+			{scaleDefault}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {outputColor};">

@@ -8,6 +8,7 @@
 	import Plot3D from "../projections/Plot3D.svelte";
 	import Latent from "../projections/Latent.svelte";
 	import Model from "./Model.svelte";
+	import Data from "../datapicker/Data.svelte";
 
 	function genColorArray(
 		datasetLength: number,
@@ -147,31 +148,46 @@
 
 	// model config
 	export let datasets: dataType[];
-	export let dataset: dataType = datasets[3];
+	export let dataset: dataType = datasets[0];
+	export let datasetNames: string[];
 	let model: Autoencoder;
 	let tensorDataset: tf.Tensor;
 	let loss: any;
 	let optim: tf.Optimizer;
-	let lr: number = 0.3;
+	let lr: number = 0.01;
 	let activation: ActivationIdentifier = "tanh";
 	let epoch: number = 0;
 
 	// output items
 	let preds: Point3D[] = [];
 	let latent: Point2D[] = [];
-	let latentDelayed: Point2D[] = zeros2D(dataset.length);
-	let minDelayed: Point2D = [Infinity, Infinity];
-	let maxDelayed: Point2D = [0, 0];
 	let min: Point2D = [Infinity, Infinity];
 	let max: Point2D = [0, 0];
 	let pos: Point3D = [0.45, 0.9, 1.6];
-	let tensors = 0;
 	let printLoss: number;
-	let grads = zeros2D(dataset.length);
 	const lrOptions = [0.00001, 0.001, 0.01, 0.1, 0.3, 0.5, 1];
 	const actOptions = ["tanh", "sigmoid", "relu"];
 	let encoderNeurons = [64, 64, 2];
 	let decoderNeurons = [2, 64, 64];
+	let inputColor = "hsla(194, 91%, 45%, 0.3)";
+	let latentColor = "hsla(122, 51%, 82%, 1)";
+	let encoderFill = "hsla(194, 74%, 73%, 0.7)";
+	let outputColor = "hsla(29, 100%, 55%, 1)";
+	let decoderFill = "hsla(29, 95%, 64%, 0.7)";
+	let encoderStroke = "hsla(194, 91%, 45%, 1)";
+	let decoderStroke = outputColor;
+	let clearText = "rgba(0,0,0,0.2)";
+	let oppgrads = "Opposite Gradients";
+	let oppgradsColors = new Array(oppgrads.length)
+		.fill("")
+		.map((_, i) =>
+			d3
+				.color(d3.interpolateSpectral(i / (oppgrads.length - 1)))
+				.darker(0.2)
+		);
+	console.log(oppgradsColors);
+
+	let isRunning = false;
 
 	let configTweened = {
 		delay: 0,
@@ -179,25 +195,17 @@
 		easing: easings.cubicOut,
 	};
 	// computed when we change dataset or config
+	$: grads = zeros2D(dataset.length);
 	$: gradsTweened = tweened(zeros2D(dataset.length), configTweened);
 	$: latentTweened = tweened(zeros2D(dataset.length), configTweened);
 	$: minTweened = tweened([0, 0], configTweened);
 	$: maxTweened = tweened([0, 0], configTweened);
 	$: predsTweened = tweened(zeros3D(dataset.length), configTweened);
 	// colors computed
-	$: inputColors = genColorArray(
-		dataset.length,
-		() => "hsla(0, 0%, 0%, 0.1)"
-	);
+	$: inputColors = genColorArray(dataset.length, () => inputColor);
 	$: outputColors = genColorArray(dataset.length, (i) =>
 		d3.interpolateSpectral(i / (dataset.length - 1))
 	);
-	$: {
-		console.log(inputColors);
-	}
-	$: {
-		console.log(outputColors);
-	}
 
 	const timer = (ms?: number) => new Promise((_) => setTimeout(_, ms));
 	let playing = false;
@@ -344,13 +352,11 @@
 		model.dispose();
 		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
 	}
-
-	let inputColor = "hsla(0, 0%, 0%, 0.2)";
-	let latentColor = "hsla(194, 91%, 45%, 1)";
-	let outputColor = "hsla(248, 49%, 68%, 0.5)";
-	let encoderFill = "";
-	let decoderFill = "";
-	let isRunning = false;
+	function setDataset(index: number) {
+		dataset = datasets[index];
+		tensorDataset.dispose();
+		tensorDataset = arrayToTensor(dataset).variable();
+	}
 
 	// computed properties
 	$: optionsEnabled = epoch == 0 && printLoss == undefined;
@@ -364,6 +370,7 @@
 			setModel(activation);
 		}
 	}
+	let selectedDatasetIndex = 0;
 </script>
 
 <!-- <div>Epoch={epoch}, Loss={printLoss}</div>
@@ -374,112 +381,136 @@
 	>Num Tensors={tensors}</button
 > -->
 
-<div id="control-center">
-	<div id="datasets">
-		{#each datasets as ds, i}
-			<div
-				class="dataset"
-				on:click={() => {
-					dataset = [...ds];
-				}}
-			>
-				{i}
-			</div>
-		{/each}
-	</div>
-	<div id="controls">
-		<div class="data-controls">
-			<div class="play-controls">
-				<button
-					class="play-pause"
-					on:click={async () => {
-						isRunning = !isRunning;
-						if (isRunning) {
-							await play();
-						} else if (!isRunning) {
-							pause();
-						}
-					}}
-				>
-					{#if isRunning}
-						<i class="material-icons">pause</i>
-					{:else}
-						<i class="material-icons">play_arrow</i>
-					{/if}
-				</button>
-				<button
-					class="restart"
-					on:click={() => {
-						isRunning = false;
-						reset();
-					}}
-					disabled={isRunning || epoch == 0}
-				>
-					<i class="material-icons">refresh</i>
-				</button>
-			</div>
-		</div>
-	</div>
-	<div id="metrics">
-		<div style="font-size: 16px; font-weight: 250;">Epochs</div>
-		<div style="font-size: 25px;">{zeroPad(epoch)}</div>
-	</div>
-	<div id="loss">
-		<div style="font-size: 16px; font-weight: 250;">Loss</div>
-		<div style="font-size: 25px;">
-			{printLoss ? printLoss.toFixed(6) : "null"}
-		</div>
-	</div>
-	<div id="custom">
-		<div id="lr">
-			<div style="font-size: 16px; font-weight: 250;">Learning Rate</div>
-			<select bind:value={lr} disabled={!optionsEnabled}>
-				{#each lrOptions as option}
-					<option value={option}>{option}</option>
-				{/each}
-			</select>
-		</div>
-		<!-- <div id="activation">
-			<div style="font-size: 16px; font-weight: 250;">Activation</div>
-			<select bind:value={activation} disabled={!optionsEnabled}>
-				{#each actOptions as option}
-					<option value={option}>{option}</option>
-				{/each}
-			</select>
-		</div> -->
-	</div>
-</div>
 <div class="container">
 	<div id="model-view">
-		<Model
-			inputs={dataset}
-			minLatent={min}
-			{latent}
-			maxLatent={max}
-			outputs={preds}
-			axesVisible
-			animating={playing}
-			globalPosition={pos}
-			on:drag={(e) => {
-				const { x, y, z } = e.detail.position;
-				pos = [x, y, z];
-			}}
-			{inputColor}
-			{inputColors}
-			{outputColors}
-		/>
+		<div id="control-center">
+			<div style="width: 150px">
+				{#each datasets as ds, i}
+					<Data
+						image="prev/{datasetNames[i]}.png"
+						onClick={() => {
+							selectedDatasetIndex = i;
+							setDataset(selectedDatasetIndex);
+						}}
+						selected={selectedDatasetIndex == i}
+					/>
+					<!-- <div
+						class="dataset"
+						on:click={() => {
+							dataset = [...ds];
+						}}
+					>
+						{i}
+					</div> -->
+				{/each}
+			</div>
+			<div id="controls">
+				<div class="data-controls">
+					<div class="play-controls">
+						<button
+							class="play-pause"
+							on:click={async () => {
+								isRunning = !isRunning;
+								if (isRunning) {
+									await play();
+								} else if (!isRunning) {
+									pause();
+								}
+							}}
+						>
+							{#if isRunning}
+								<i class="material-icons">pause</i>
+							{:else}
+								<i class="material-icons">play_arrow</i>
+							{/if}
+						</button>
+						<button
+							class="restart"
+							on:click={() => {
+								isRunning = false;
+								reset();
+							}}
+							disabled={isRunning || epoch == 0}
+						>
+							<i class="material-icons">refresh</i>
+						</button>
+					</div>
+				</div>
+			</div>
+			<div id="metrics">
+				<div style="font-size: 16px; font-weight: 250;">Epochs</div>
+				<div style="font-size: 25px;">{zeroPad(epoch)}</div>
+			</div>
+			<div id="loss">
+				<div style="font-size: 16px; font-weight: 250;">Loss</div>
+				<div style="font-size: 25px;">
+					{printLoss ? printLoss.toFixed(6) : "null"}
+				</div>
+			</div>
+			<div id="custom">
+				<!-- <div id="lr">
+					<div style="font-size: 16px; font-weight: 250;">
+						Learning Rate
+					</div>
+					<select bind:value={lr} disabled={!optionsEnabled}>
+						{#each lrOptions as option}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+				</div> -->
+				<!-- <div id="activation">
+					<div style="font-size: 16px; font-weight: 250;">Activation</div>
+					<select bind:value={activation} disabled={!optionsEnabled}>
+						{#each actOptions as option}
+							<option value={option}>{option}</option>
+						{/each}
+					</select>
+				</div> -->
+			</div>
+		</div>
+		<div id="model">
+			<Model
+				inputs={dataset}
+				minLatent={min}
+				{latent}
+				maxLatent={max}
+				outputs={preds}
+				axesVisible
+				animating={playing}
+				globalPosition={pos}
+				on:drag={(e) => {
+					const { x, y, z } = e.detail.position;
+					pos = [x, y, z];
+				}}
+				{inputColor}
+				{outputColor}
+				{inputColors}
+				{outputColors}
+				{encoderFill}
+				{decoderFill}
+				{encoderStroke}
+				{decoderStroke}
+				{latentColor}
+			/>
+		</div>
 	</div>
 	<div class="divider" />
 	<div id="graphs">
 		<div id="layered-view">
 			<div style="position: relative;">
-				<div class="colored" style="color: black; font-weight: normal;">
+				<div
+					class="colored"
+					style="color: {clearText}; font-weight: normal;"
+				>
 					Layered
 				</div>
-				<div class="colored" style="color: {inputColor};">
+				<div class="colored" style="color: {encoderStroke};">
 					3D input Data
 				</div>
-				<div class="colored" style="color: black; font-weight: normal;">
+				<div
+					class="colored"
+					style="color: {clearText}; font-weight: normal;"
+				>
 					and
 				</div>
 				<div class="colored" style="color: {outputColor};">
@@ -496,7 +527,10 @@
 			</div>
 			<div>
 				<Plot3D
-					data3D={[...dataset, ...$predsTweened]}
+					data3D={[
+						...dataset,
+						...(preds.length > 0 ? $predsTweened : []),
+					]}
 					lenData={dataset.length}
 					on:hover={(e) => {}}
 					on:drag={(e) => {
@@ -523,18 +557,33 @@
 				>
 					Latent Space
 				</div>
-				with
-				<div class="colored" style="color: #A5DAEF;font-size: 15px;">
-					Opposite Gradients
+				<div
+					class="colored"
+					style="color: {clearText};font-size: 15px;"
+				>
+					with
 				</div>
+				{#each oppgrads as letter, index}
+					<span
+						style="color: {oppgradsColors[
+							index
+						]};font-size: 15px; {letter != ' '
+							? 'display: inline-block '
+							: ''};"
+					>
+						{letter}
+					</span>
+				{/each}
+				<img src="trail.svg" alt="trail" />
 			</div>
 			<div>
 				<Latent
-					grads={$gradsTweened}
-					points={$latentTweened}
+					grads={epoch == 0 ? [] : $gradsTweened}
+					points={epoch == 0 ? [] : $latentTweened}
 					min={$minTweened}
 					max={$maxTweened}
 					colorIndices={outputColors}
+					borderColor={latentColor}
 				/>
 			</div>
 		</div>
@@ -547,7 +596,9 @@
 		height: 60px;
 		display: flex;
 		align-items: center;
-		margin-left: 150px;
+		margin-bottom: 150px;
+		margin-left: 25px;
+		// margin-left: 150px;
 		// border-bottom: 1px $divider-color solid;
 		width: 800px;
 
@@ -562,6 +613,7 @@
 			margin-right: 50px;
 		}
 		#controls {
+			margin-left: 25px;
 			button {
 				cursor: pointer;
 				outline: none;
@@ -619,7 +671,7 @@
 		-moz-user-select: none;
 		-ms-user-select: none;
 
-		#model-view {
+		#model {
 		}
 		.divider {
 			margin-right: 40px;
@@ -643,4 +695,9 @@
 		font-size: 20px;
 		font-weight: 500;
 	}
+	// .data-menu {
+	// 	display: flex;
+	// 	width: 200px;
+	// 	// margin-left: 5%;
+	// }
 </style>
