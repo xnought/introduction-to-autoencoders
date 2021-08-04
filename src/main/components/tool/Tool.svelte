@@ -364,7 +364,6 @@
 	}
 
 	// computed properties
-	$: optionsEnabled = epoch == 0 && printLoss == undefined;
 	$: {
 		if (mounted) {
 			setOptimizer(lr);

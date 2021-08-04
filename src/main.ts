@@ -1,11 +1,11 @@
-import App from "./App.svelte";
-import Test from "./Test.svelte";
+import Main from "./main/App.svelte";
+import MNIST from "./MNIST/App.svelte";
 
-const app = new App({
+const main = new Main({
 	target: document.getElementById("main"),
 });
-const test = new Test({
-	target: document.getElementById("test"),
+const mnist = new MNIST({
+	target: document.getElementById("mnist"),
 });
 
-export default app;
+export default main;
