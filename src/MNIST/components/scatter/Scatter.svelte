@@ -118,7 +118,7 @@ MNIST Latent Space
 	@import "../../styles/theme";
 	svg {
 		overflow: visible;
-		cursor: crosshair;
+		// cursor: crosshair;
 		border: 3px solid black;
 		border-radius: 3px;
 	}

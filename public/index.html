@@ -169,13 +169,6 @@
 			</p>
 			<h3 class="under-line encoder" id="encoder">Encoder</h3>
 			<p>
-				<d-figure>
-					<img
-						src="encoderFrame.png"
-						alt="encoderFrame"
-						width="100%"
-					/>
-				</d-figure>
 				The Encoder portion of the autoencoder, takes the input of some
 				dimension
 				<d-math inline> m </d-math>
@@ -197,6 +190,7 @@
 				<d-math inline>1</d-math>.
 			</p>
 			<p>
+				<d-figure id="encoderDiagram"> </d-figure>
 				PUT THE INTERACTIVE FIGURE ABOVE THIS You could also interpret
 				this as a learnable transformation mapping from
 				<d-math inline> m</d-math> to <d-math inline>n</d-math>. And in
@@ -205,9 +199,6 @@
 			</p>
 			<h3 class="under-line latent" id="latent">Latent Space</h3>
 			<p>
-				<d-figure>
-					<img src="latentFrame.png" alt="latentFrame" width="100%" />
-				</d-figure>
 				The Latent Space is all of the outputs vectors from the Encoder.
 				In our case since the encoder had a bottleneck of 2 outputs, we
 				can plot the outputs in a 2D Coordinate system. Among being able
@@ -217,6 +208,7 @@
 				<d-math inline>n</d-math>D).
 			</p>
 			<p>
+				<d-figure id="latentDiagram"> </d-figure>
 				ABOVE OR BELOW HERE PUT THE ANIMATION One very good way to
 				visualize the latent space is to compute the gradient of the
 				loss with respect to the latent space/ encoder output. Now that
@@ -229,13 +221,6 @@
 			</p>
 			<h3 class="under-line decoder" id="decoder">Decoder</h3>
 			<p>
-				<d-figure>
-					<img
-						src="decoderFrame.png"
-						alt="decoderFrame"
-						width="100%"
-					/>
-				</d-figure>
 				The decoder takes the bottleneck, of 2 in our case, and tries to
 				reconstruct the original. This is done with a loss function,
 				adequatly called reconstruction loss, that compares the original
@@ -243,6 +228,7 @@
 				and optimize to train our network.
 			</p>
 			<p>
+				<d-figure id="decoderDiagram"> </d-figure>
 				Similar to the description of the encoder, we are mapping from
 				the bottle neck to the original reconstruction. From
 				<d-math inline>\mathbb{R}^2 \rightarrow \mathbb{R}^3</d-math>,

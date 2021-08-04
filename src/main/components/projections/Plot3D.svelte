@@ -18,6 +18,7 @@
 	export let style = "";
 	export let isOrbiting = false;
 	export let colorIndices: string[];
+	export let orbitOnStart = false;
 
 	const dispatch = createEventDispatcher();
 	let container: HTMLElement;
@@ -52,11 +53,7 @@
 				axesVisible,
 			},
 			selectEnabled: false,
-			rotateOnStart: false,
-			onCameraDrag: (pos, target) => {
-				dispatch("drag", { position: pos });
-				if (isOrbiting) isOrbiting = false;
-			},
+			rotateOnStart: orbitOnStart,
 			onHover: (d) => {
 				if (d === null || d === hoveredPointIndex) return;
 				dispatch("hover", d);
