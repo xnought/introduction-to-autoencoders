@@ -538,7 +538,7 @@
 					and
 				</div>
 				<div class="colored" style="color: {outputColor};">
-					Reconstruction
+					3D Reconstruction
 				</div>
 				<!-- <div class="colored" style="color: {outputColor};">
 					<span class="material-icons">3d_rotation</span>
@@ -581,7 +581,7 @@
 					class="colored"
 					style="color: {latentColor};font-size: 15px;"
 				>
-					Latent Space
+					2D Latent Space
 				</div>
 				<div
 					class="colored"

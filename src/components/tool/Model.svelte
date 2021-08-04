@@ -61,7 +61,7 @@
 			height="165px"
 			hoveredPointIndex={globalHover}
 			pos={globalPosition}
-			axesVisible={false}
+			axesVisible={true}
 			colorIndices={inputColors}
 			{pointConfig}
 		/>
@@ -104,8 +104,8 @@
 			hoverPointIndex={globalHover}
 		/>
 		<div class="text-center">
-			<div class="colored" style="color: {latentColor}; font-size: 11px;">
-				Latent Space
+			<div class="colored" style="color: {latentColor}; font-size: 14px;">
+				2D Latent Space
 			</div>
 		</div>
 	</div>
@@ -137,13 +137,13 @@
 			height="165px"
 			hoveredPointIndex={globalHover}
 			pos={globalPosition}
-			axesVisible={false}
+			axesVisible={true}
 			colorIndices={outputColors}
 			{pointConfig}
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {outputColor};">
-				Reconstruction
+				3D Reconstruction
 			</div>
 		</div>
 	</div>
