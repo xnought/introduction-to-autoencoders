@@ -43,7 +43,6 @@
 			additional[sortedDistances[2].index],
 		];
 	}
-
 	let equi;
 	let svg: SVGElement;
 	let stringqui;
@@ -90,5 +89,4 @@
 		justify-content: center;
 		margin-top: 15px;
 	}
-	/*  put stuff here */
 </style>
