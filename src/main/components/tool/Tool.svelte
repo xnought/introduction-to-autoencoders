@@ -395,7 +395,7 @@
 			>
 				A.
 			</div>
-			<div class="colored">Pick a Dataset</div>
+			<div class="colored">Pick Dataset</div>
 			<div
 				class="colored"
 				style="margin-left: 50px; font-size: 30px; color: {clearText}"
