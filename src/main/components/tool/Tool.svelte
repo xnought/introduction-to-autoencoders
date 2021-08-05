@@ -171,7 +171,7 @@
 	let encoderNeurons = [64, 64, 2];
 	let decoderNeurons = [2, 64, 64];
 	let inputColor = "hsla(194, 91%, 45%, 0.3)";
-	let latentColor = "hsla(122, 51%, 82%, 1)";
+	let latentColor = "hsla(122, 51%, 70%, 1)";
 	let encoderFill = "hsla(194, 74%, 73%, 0.7)";
 	let outputColor = "hsla(29, 100%, 55%, 1)";
 	let decoderFill = "hsla(29, 95%, 64%, 0.7)";

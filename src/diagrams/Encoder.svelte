@@ -104,7 +104,7 @@
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {latentColor}; font-size: 14px;">
-				2D Latent Space
+				<p style="line-height: 1.2;">2D Latent Space</p>
 			</div>
 		</div>
 	</div>

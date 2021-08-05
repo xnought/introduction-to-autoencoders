@@ -3,6 +3,7 @@ import MNIST from "./MNIST/App.svelte";
 import Encoder from "./diagrams/DataLoader.svelte";
 import Decoder from "./diagrams/DataLoader.svelte";
 import Latent from "./diagrams/DataLoader.svelte";
+import LatentGradExample from "./diagrams/latentGradExample.svelte";
 
 const main = new Main({
 	target: document.getElementById("main"),
@@ -27,6 +28,9 @@ const latent = new Latent({
 	props: {
 		diagramPicker: "latent",
 	},
+});
+const latentGradExample = new LatentGradExample({
+	target: document.getElementById("latentGradDiagram"),
 });
 
 export default main;

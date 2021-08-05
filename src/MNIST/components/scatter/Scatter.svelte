@@ -69,11 +69,12 @@
 	onMount(() => {
 		// addAllAxes(svgPtr); // start by adding some axes to the scatter plot
 	});
+	let latentColor = "hsla(122, 51%, 70%, 1)";
 </script>
 
 <!-- This svg is bound the svg variable above -->
-MNIST Latent Space
 <div id="container">
+	<div style="color: {latentColor}; font-size: 15px;">2D Latent Space</div>
 	<svg
 		bind:this={svgPtr}
 		{width}
@@ -82,6 +83,7 @@ MNIST Latent Space
 			const [x, y] = pointer(e, svgPtr);
 			position(revxScale(x), revyScale(y));
 		}}
+		style="border: 3px solid {latentColor};"
 	>
 		<rect
 			x={0}
@@ -119,7 +121,6 @@ MNIST Latent Space
 	svg {
 		overflow: visible;
 		// cursor: crosshair;
-		border: 3px solid black;
 		border-radius: 3px;
 	}
 	#container {

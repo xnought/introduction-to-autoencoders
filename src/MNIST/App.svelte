@@ -23,7 +23,6 @@
 		digitData = decoded;
 		maxData = max;
 		formattedData = data2.data;
-		console.log(formattedData.length);
 		loaded = true;
 	});
 
@@ -34,9 +33,10 @@
 		encoder.dispose();
 		decoder.dispose();
 	});
+	let digitSquare = 280;
 </script>
 
-<div style="border: 1px solid black; width: 800px;">
+<div style="width: 720px;">
 	{#if loaded}
 		<div style="display: inline-flex;">
 			<div>
@@ -59,15 +59,25 @@
 							maxData = max;
 						});
 					}}
-					legendTitle={"Digit Label"}
+					legendTitle={"Test Set Digit Label"}
 				/>
 			</div>
 			<div style="margin-left: 100px;">
-				<MnistDigit data={digitData} square={300} maxVal={maxData} />
+				<div style="color: hsla(29, 100%, 55%, 1);">Reconstruction</div>
+
+				<div
+					style="border: 3px solid hsla(29, 100%, 55%, 1); border-radius: 3px; height: {digitSquare}px;"
+				>
+					<MnistDigit
+						data={digitData}
+						square={digitSquare}
+						maxVal={maxData}
+					/>
+				</div>
 			</div>
 		</div>
 	{:else}
-		<center>Loading...</center>
+		Loading...
 	{/if}
 </div>
 

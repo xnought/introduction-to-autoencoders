@@ -95,7 +95,6 @@
 			data2D={latent}
 			width={81}
 			height={81}
-			color={latentColor}
 			radius={1}
 			min={minLatent}
 			max={maxLatent}
@@ -105,7 +104,7 @@
 		/>
 		<div class="text-center">
 			<div class="colored" style="color: {latentColor}; font-size: 14px;">
-				2D Latent Space
+				<p style="line-height: 1.2;">2D Latent Space</p>
 			</div>
 		</div>
 	</div>

@@ -26,9 +26,26 @@
 		/>
 		<style>
 			:root {
-				--encoderFill: hsla(194, 74%, 73%, 0.702);
+				--encoderStroke: hsla(194, 91%, 45%, 1);
+				--decoderStroke: hsla(29, 100%, 55%, 1);
+				--encoderFill: hsla(194, 81%, 62%, 0.851);
 				--decoderFill: hsla(29, 95%, 64%, 0.702);
-				--latentFill: hsla(122, 51%, 82%, 1);
+				--latentFill: hsla(122, 51%, 70%, 1);
+			}
+			.decoderStroke {
+				color: var(--decoderStroke);
+			}
+			.decoderFill {
+				color: var(--decoderFill);
+			}
+			.encoderFill {
+				color: var(--encoderFill);
+			}
+			.encoderStroke {
+				color: var(--encoderStroke);
+			}
+			.latentColor {
+				color: var(--latentFill);
 			}
 			.under-line {
 				border-bottom-width: 1px;
@@ -56,7 +73,7 @@
 				{
 					"authors": [
 						{
-							"author": "Donald Renato Bertucci",
+							"author": "Donald R Bertucci",
 							"authorURL": "https://donnybertucci.com",
 							"affiliation": "Oregon State University",
 							"affiliationURL": "https://www.oregonstate.edu/"
@@ -81,67 +98,33 @@
 		</d-front-matter>
 
 		<d-title>
-			<h1>What are Autoencoders?</h1>
+			<h1>An Interactive Introduction to Autoencoders</h1>
 			<p>
-				An intuitive walkthrough of a very popular and useful neural
-				network architecture: <b>autoencoders</b>.
+				<b>Below</b>, train an autoencoder right in your browser, then
+				read the interactive explanation.
 			</p>
 		</d-title>
-		<!-- <d-abstract>
-			<p>
-				Autoencoders have many different applications, but most notably
-				they have been used as generative models and for dimensionality
-				reduction
-				<d-footnote
-					>Specific applications will be discussed in the
-					<a href="#overview">overview</a> section and throughout the
-					rest of the article.</d-footnote
-				>. Although autoencoders are used to learn complex
-				representations, the architecture is actually
-				<b> very simple</b>! Autoencoders just <i>deconstruct</i> down,
-				then learn to <i>reconstruct</i> back up. Before we go any
-				further, try one for yourself –
-				<b>Train an autoencoder on a 3D Dataset below in</b>
-				<a class="figure-number-text" href="#main">1</a>.
-			</p>
-		</d-abstract> -->
 		<div id="main"></div>
 		<d-byline></d-byline>
 
 		<d-article>
-			<p id="introduction"></p>
-
+			<div>
+				<p id="introduction"></p>
+			</div>
 			<p>
 				Autoencoders have many different applications, but most notably
 				they have been used as generative models and for dimensionality
-				reduction
-				<d-footnote
-					>Specific applications will be discussed in the
-					<a href="#overview">overview</a> section and throughout the
-					rest of the article.</d-footnote
-				>. Although autoencoders are used to learn complex
+				reduction. Although autoencoders are used to learn complex
 				representations, the architecture is actually
 				<b> very simple</b>! Autoencoders just <i>deconstruct</i> down,
 				then learn to <i>reconstruct</i> back up.
 			</p>
-			<p>
-				<d-figure id="hover" class="subgrid">
-					<img src="hover.gif" alt="hover" width="100%" />
-				</d-figure>
-				<figcaption style="grid-column: text">
-					<a class="figure-number-text" href="#hover">2</a>: You can
-					hover over a datapoint to see where it is reduced down to 2D
-					and reconstructed back to 3D.
-				</figcaption>
-			</p>
 
 			<p>
-				If you want to dive slightly deeper, the rest of the article
-				will go over
-				<a href="#overview">structure</a> of the autoencoder in context
+				The rest of the article will dive into the
+				<a href="#structure">Structure</a> of an autoencoder in context
 				to the <a class="figure-number-text" href="#main">1</a> and will
 				be broken up into
-
 				<a style="color: var(--encoderFill)" href="#encoder">
 					<img src="encoder.svg" width="10px" /> Encoder</a
 				>,
@@ -151,118 +134,339 @@
 				<a style="color: var(--decoderFill)" href="#decoder"
 					>Decoder <img src="decoder.svg" width="10px"
 				/></a>
-				.
+				to explain each piece of the puzzle. Then, will conclude with a
+				glimpse into an autoencoder trained on
+				<a href="#digits">MNIST Digits</a>.
 			</p>
-			<h2>Structure</h2>
-			<p>
-				As mentioned before, Autoencoders are a type of neural network
-				architecture. More specifically they would fall into
-				unsupervised learning because their validation label is the
-				input itself, or some variation of the input
-				<d-footnote>VAE, DAE, etc...</d-footnote>. Often they are used
-				as a way to reduce down dimensions. For example, in
-				<a class="figure-number-text" href="#main">1</a>, We start with
-				3D Input Data and reduce down to 2D, then reconstruct back up to
-				3D. After some training, we can observe the 2D Latent Space
-				looks very similar to the 3D representation but with one reduced
-				dimension.
-			</p>
+			<h2 id="structure">Structure</h2>
+
+			<!-- ENCODER SECTION -->
 			<h3 class="under-line encoder" id="encoder">Encoder</h3>
 			<p>
-				The Encoder portion of the autoencoder, takes the input of some
-				dimension
-				<d-math inline> m </d-math>
+				The <span class="encoderFill">Encoder</span> is the first half
+				of the neural network that takes an input with a
+				<b>higher</b> dimension, then outputs to a
+				<b>lower</b>
+				dimension – thereby creating a bottleneck<d-footnote
+					>More precisely, it takes the input of some dimension
+					<d-math inline> m </d-math>
 
-				, then creates a bottleneck by reducing the dimensions down to
-				<d-math inline> n</d-math>, where
-				<d-math inline> m > n</d-math>. Similar to compression, we are
-				going from larger to smaller dimensions. Hence, the
-				representation of the encoder from
-				<a class="figure-number-text" href="#main">1</a> is a trapezoid,
-				starting with a larger base, moving to a smaller one
-				<d-footnote
-					>In <a class="figure-number-text" href="#main">1</a> we go
-					from 3 Dimensional to 2 Dimensional Data, but other examples
-					not limited to this. </d-footnote
-				>. If there was no bottleneck and
-				<d-math inline> m = n</d-math>, there would be nothing to learn
-				and no reduction would take place: weights would go to
-				<d-math inline>1</d-math>.
+					, then creates a bottleneck by reducing the dimensions down
+					to
+					<d-math inline> n</d-math>, where
+					<d-math inline> m > n</d-math>.</d-footnote
+				>. Similar to other data compression problems, we are going from
+				a larger to smaller representation<d-cite
+					key="crocetti2017what"
+				></d-cite
+				>. Hence, the design of the
+				<span class="encoderFill">Encoder</span> from
+				<a class="figure-number-text" href="#main">1</a> is a
+				<img src="encoder.svg" width="10px" /> trapezoid , starting with
+				a larger base, moving to a smaller one: going from 3
+				Dimensional(<code>3D</code>) to 2 Dimensional(<code>2D</code>)
+				data.
 			</p>
 			<p>
 				<d-figure id="encoderDiagram"> </d-figure>
-				PUT THE INTERACTIVE FIGURE ABOVE THIS You could also interpret
-				this as a learnable transformation mapping from
-				<d-math inline> m</d-math> to <d-math inline>n</d-math>. And in
-				<a class="figure-number-text" href="#main">1</a>'s case, from
-				<d-math inline>\mathbb{R}^3 \rightarrow \mathbb{R}^2</d-math>.
+				<figcaption style="grid-column: text">
+					<a class="figure-number-text" href="#encoderDiagram">2</a>:
+					Hover over data points in
+					<span class="encoderStroke">3D input Data</span>
+					or
+					<span class="latentColor">2D Latent Space</span>
+					to see encoder mapping from <code>3D</code> to
+					<code>2D</code>.
+				</figcaption>
 			</p>
+			<p>
+				You can see from
+				<a class="figure-number-text" href="#encoderDiagram">2</a> after
+				training the entire autoencoder, the
+				<span class="encoderFill">Encoder</span> is just a learned
+				function that takes the input to a lower dimension. In the
+				<a class="figure-number-text" href="#encoderDiagram">2</a>, the
+				<span class="latentColor">2D Latent Space</span> looks like the
+				<span class="encoderStroke">3D input Data</span> if we ignored
+				the vertical dimension. This is exactly what we should expect
+				given the bottleneck defined from <code>3D</code> to
+				<code>2D</code>.
+			</p>
+
+			<!-- LATENT SPACE SECTION -->
 			<h3 class="under-line latent" id="latent">Latent Space</h3>
 			<p>
-				The Latent Space is all of the outputs vectors from the Encoder.
-				In our case since the encoder had a bottleneck of 2 outputs, we
-				can plot the outputs in a 2D Coordinate system. Among being able
-				to do vector math here to find different combinations, we can
-				visualize the dimensionality reduction in something that is
-				intutive (visualzing 2D much easier than
-				<d-math inline>n</d-math>D).
+				The <span class="latentColor">Latent Space</span> is composed of
+				all outputs from the <span class="encoderFill">Encoder</span>.
+				Or in other words, one output is a latent vector, and all
+				outputs would constitute a
+				<span class="latentColor">Latent Space</span>. Among being able
+				to do vector arithmetic to find connections and combinations,
+				the visualization of this space and the structure it forms,
+				returns a huge amount of intuition.
+			</p>
+			<p>
+				One way to visualize the structure that forms is through
+				<span
+					style="
+						color: rgb(147, 1, 61);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>O</span
+				><span
+					style="
+						color: rgb(177, 34, 68);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>p</span
+				><span
+					style="
+						color: rgb(201, 64, 70);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>p</span
+				><span
+					style="
+						color: rgb(219, 92, 68);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>o</span
+				><span
+					style="
+						color: rgb(229, 124, 74);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>s</span
+				><span
+					style="
+						color: rgb(234, 156, 90);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>i</span
+				><span
+					style="
+						color: rgb(236, 186, 112);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>t</span
+				><span
+					style="
+						color: rgb(237, 210, 136);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>e</span
+				><span style="color: rgb(236, 226, 158); font-size: 15px">
+				</span
+				><span
+					style="
+						color: rgb(229, 233, 162);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>G</span
+				><span
+					style="
+						color: rgb(213, 228, 151);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>r</span
+				><span
+					style="
+						color: rgb(187, 217, 148);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>a</span
+				><span
+					style="
+						color: rgb(155, 204, 152);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>d</span
+				><span
+					style="
+						color: rgb(118, 188, 155);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>i</span
+				><span
+					style="
+						color: rgb(85, 166, 160);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>e</span
+				><span
+					style="
+						color: rgb(63, 136, 168);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>n</span
+				><span
+					style="
+						color: rgb(66, 105, 164);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>t</span
+				><span
+					style="
+						color: rgb(88, 74, 151);
+						font-size: 15px;
+						display: inline-block;
+					"
+					>s</span
+				>
+
+				<img src="trail.svg" alt="trail" />. By understanding what
+				direction each point in the
+				<span class="latentColor">Latent Space</span>
+				is tending towards, we can get an idea of where the training is
+				headed towards <d-cite key="kahng2018gan"></d-cite>.
+				<d-figure id="latentGradDiagram"> </d-figure>
+			</p>
+			<p>
+				After computing the gradient of loss with respect to the latent
+				output<d-footnote
+					>The partial derivative of loss with respect to the first
+					latent output
+					<d-math inline>
+						\frac{\partial \text{loss}}{\partial
+						\text{latent}_0}</d-math
+					>
+					and the partial derivative of loss with respect to the
+					second latent output
+					<d-math inline>
+						\frac{\partial \text{loss}}{\partial
+						\text{latent}_1}</d-math
+					>. </d-footnote
+				>, we now have direction of steepest ascent to
+				<b>increase</b> loss. Then, to get the direction of steepest
+				descent, we negate<d-footnote>
+					The negation of the Gradient is where the term
+					<b>Opposite</b> of <b>Opposite</b> Gradient refers
+					to.</d-footnote
+				>
+				the direction to <b>decrease</b> loss. In
+				<a class="figure-number-text" href="#latentGradDiagram">3</a>,
+				the point has a trail that represents the Opposite Gradient:
+				what direction the point needs to move to lower loss.
 			</p>
 			<p>
 				<d-figure id="latentDiagram"> </d-figure>
-				ABOVE OR BELOW HERE PUT THE ANIMATION One very good way to
-				visualize the latent space is to compute the gradient of the
-				loss with respect to the latent space/ encoder output. Now that
-				we have the direction of steepest ascent we can negate it and
-				apply learning rate. Doing this we can show where each point
-				wants to move to lower loss very similar to what was done in GAN
-				Lab<d-cite key="kahng2018gan"></d-cite>. But now doing this with
-				the latent space, we can get an idea where the latent space
-				wants to move to lower the loss.
+				<figcaption style="grid-column: text">
+					<a class="figure-number-text" href="#latentDiagram">4</a>:
+					Drag the <span style="color: #ff6600">slider</span> to see
+					<span class="latentColor">2D Latent Space</span> during
+					training.
+				</figcaption>
+			</p>
+			<p>
+				Just by observing the trails
+				<img src="trail.svg" alt="trail" />, you can see the structure
+				that takes place over training. This method of visualization can
+				be applied to other outputs, demonstrated by
+				<code>Minsuk Kahng et al.</code> in
+				<a href="https://poloclub.github.io/ganlab/">GAN Lab</a
+				><d-cite key="kahng2018gan"></d-cite>. And specifically by
+				applying it to the
+				<span class="latentColor">2D Latent Space</span> in
+				<a class="figure-number-text" href="#latentDiagram">4</a>, adds
+				an enormous amount of intuition for whats going to form.
 			</p>
 			<h3 class="under-line decoder" id="decoder">Decoder</h3>
 			<p>
-				The decoder takes the bottleneck, of 2 in our case, and tries to
-				reconstruct the original. This is done with a loss function,
-				adequatly called reconstruction loss, that compares the original
-				input to the reconstructed input. From this we can backpropagate
-				and optimize to train our network.
+				After the <span class="encoderFill">Encoder</span> deconstructs
+				the original input down to the
+				<span class="latentColor">Latent Space</span>, the
+				<span class="decoderFill">Decoder</span>
+				<b>reconstructs</b> back up to the original input. Hence the
+				outward <img src="decoder.svg" width="10px" /> trapezoid for the
+				<span class="decoderFill">Decoder</span> design, starting with a
+				smaller base, moving to a larger one. The loss function,
+				adequately named "reconstruction loss," is computed with the
+				original input and the reconstructed input. Now we can
+				backpropagate the reconstruction loss and optimize! All the
+				pieces are now present to train the autoencoder.
 			</p>
 			<p>
 				<d-figure id="decoderDiagram"> </d-figure>
-				Similar to the description of the encoder, we are mapping from
-				the bottle neck to the original reconstruction. From
-				<d-math inline>\mathbb{R}^2 \rightarrow \mathbb{R}^3</d-math>,
-				in our case. It doesnt have to be the case that the encoder and
-				decoder are symetrical.
-			</p>
-			<h2>Conclusion</h2>
-			<p>
-				Conclusion, vanilla autoencoders are not diffult to understand,
-				as you know by now, but from the pieces shown, there are
-				improvments to be made in certial applications. For example,
-				vector math over the latent space sometimes is rough with blank
-				spots, so modified loss to straighten out the latent space has
-				come, VAE, etc..
+				<figcaption style="grid-column: text">
+					<a class="figure-number-text" href="#decoderDiagram">5</a>:
+					Hover over data points in
+					<span class="latentColor">2D Latent Space</span>
+					or
+					<span class="decoderStroke">3D Reconstruction</span>
+					to see mapping from <code>2D</code> to <code>3D</code>.
+				</figcaption>
 			</p>
 			<p>
-				With innovation comes more interesting applications and
-				potential visualizations. Take the mnist dataset, put preview to
-				a few images.
+				You can see from
+				<a class="figure-number-text" href="#decoderDiagram">5</a> after
+				training the entire autoencoder, the
+				<span class="decoderFill">Decoder</span> is just a learned
+				function that reconstructs from the bottleneck. In the
+				<a class="figure-number-text" href="#decoderDiagram">5</a>, the
+				<span class="decoderStroke">3D Reconstruction</span> looks like
+				the <span class="latentColor">2D Latent Space</span> if we added
+				a dimension.
+			</p>
+			<h2 id="digits">Digits Example</h2>
+			<p>
+				Autoencoders are not just fixed to <code>3D</code> data like the
+				previous examples – they can be used on other examples too!
 			</p>
 			<p>
-				By training an autoencoder from
-				<d-math inline>28^2 = 784</d-math> with a bottleneck of 2. We
-				can get some see clustering in 2d space. Hover over the latent
-				space below and see the clustering with reconstruction.
+				In fact, autoencoders have widespread use solving many problems
+				due to their success with dimensionality reduction, generation,
+				and importantly their simple architecture.
 			</p>
-			<d-figure id="mnist"> </d-figure>
+			<p>
+				Although simple, autoencoders can be used everywhere! For
+				example, with the
+				<code>MNIST</code> digits dataset, people often try to create a
+				model to predict the correct digit (0-9) based on
+				<code>28 by 28</code> handwritten digit.
+			</p>
+			<p>
+				To help visualize the dataset better, we can train an
+				autoencoder to take in the input and reduce down to a bottleneck
+				of <code>2D</code>, then reconstruct back up.
+			</p>
+			<p>
+				<d-figure id="mnist"> </d-figure>
+				<figcaption>
+					<a class="figure-number-text" href="#mnist">6</a>: Hover
+					over <span class="latentColor">2D Latent Space</span> to see
+					<span class="decoderStroke">Reconstruction</span> of a
+					digit.
+				</figcaption>
+			</p>
 
 			<p>
-				Interesting Applications of this architecture, seem endless,
-				coarsegraing for ECA to learn emergent behavior, generative
-				models, insert other... Wiht innovations.... A architecture here
-				to stay.
+				In <a class="figure-number-text" href="#mnist">6</a>, In
+				addition to seeing the test data clustered in <code>2D</code>,
+				we can interpolate over the latent space to see what the model
+				learned!
 			</p>
+
+			<div class="hidden-citations">
+				<d-cite
+					key="karpathymnist, carter2017tensorflow, hohman2020communicating, kahng2018ganpaper, kahng2018gan, smilkov2019tensorflow, wattenberg2016use, baldi1989neural, baldi2012autoencoders, crocetti2017what"
+				/>
+			</div>
 		</d-article>
 
 		<d-appendix>
@@ -274,27 +478,44 @@
 				<a href="https://pair-code.github.io/understanding-umap/"
 					>Understanding UMAP</a
 				>
-				<d-cite key="kahng2018gan, coenen2019understanding"></d-cite>.
-				Visualizing 3D data reduced down to 2D
-				<d-cite key="coenen2019understanding"></d-cite> and the model
-				view and the layered distributions
-				<d-cite key="kahng2018gan"></d-cite>
+				<d-cite
+					key="kahng2018gan, kahng2018ganpaper, coenen2019understanding"
+				></d-cite
+				>. Visualizing <code>3D</code> data reduced down to
+				<code>2D</code>
+				<d-cite key="coenen2019understanding"></d-cite>, the model view,
+				the layered distributions, and the gradient lines/trails
+				<d-cite key="kahng2018gan, kahng2018ganpaper"></d-cite>
 				were key ideas used in the main autoencoder visualization.
 			</p>
 
 			<p>
-				<b>Libraries used: </b>The 3D Scatter Plots were created using
-				<a href="https://github.com/PAIR-code/scatter-gl">ScatterGL</a>.
-				Autoencoder created and trained with
-				<a href="https://www.tensorflow.org/js">Tensorflow JS</a>.
-				Article formatted with the
+				The article was styled with the
 				<a href="https://github.com/distillpub/template"
 					>Distill HTML Template</a
 				>.
+				<a
+					href="https://distill.pub/2020/communicating-with-interactive-articles/"
+					>Communicating with Interactive Articles</a
+				>
+				by <code>Hohman, et al.</code> was used as a reference for what
+				works well.
+			</p>
+			<p>
+				<b>Libraries used: </b>Plotting and visualization done in
+				<a href="https://svelte.dev/">Svelte</a>, with help of
+				<a href="https://d3js.org/">d3.js</a>, and
+				<a href="https://github.com/PAIR-code/scatter-gl">ScatterGL</a>.
+				Autoencoder created and trained with
+				<a href="https://www.tensorflow.org/js">Tensorflow JS</a>.
 			</p>
 
 			<h3>Author Contributions</h3>
-			<p>Put Contributions here</p>
+			<p>
+				Donald R Bertucci implemented all of the visualizations and
+				wrote the article during the summer after his first year
+				undergrad. at Oregon State University.
+			</p>
 
 			<d-footnote-list></d-footnote-list>
 			<d-citation-list></d-citation-list>

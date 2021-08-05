@@ -1,43 +1,9 @@
 <script lang="ts">
-	import { DataStorage } from "@tensorflow/tfjs-core";
-
 	import { onMount } from "svelte";
 	import { getData } from "./app";
 	import Tool from "./components/tool/Tool.svelte";
 
 	let websiteName: string = "Autoencoder Lab";
-	let dataset: dataType;
-
-	function detectWebBrowser() {
-		const isSafari =
-			/constructor/i.test(window.HTMLElement) ||
-			(function (p) {
-				return p.toString() === "[object SafariRemoteNotification]";
-			})(
-				!window["safari"] ||
-					(typeof safari !== "undefined" &&
-						window["safari"].pushNotification)
-			);
-	}
-	// class Dataset {
-	// 	data: Point3D[];
-	// 	inputColors: string[];
-	// 	outputColors: string[];
-	// 	constructor(data: Point3D[], colors: string[]) {
-	// 		this.data = data;
-	// 		this.inputColors = [];
-	// 		this.outputColors = [];
-	// 	}
-	// 	clusterColors(colors: string[]) {
-	// 		const fraction = Math.ceil(colors.length);
-	// 		for(let i = 0; i < this.data.length; i++) {
-	// 			this.inputColors.push(c)
-	// 		}
-	// 	}
-	// 	scaleColors() {
-	// 	}
-	// }
-
 	const datasetNames = ["circle", "sin", "spiral", "twistedcubic"];
 	let datasets: any[] = [];
 	let loaded = false;
