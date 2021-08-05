@@ -64,6 +64,8 @@
 		addAxisToDOM(svgPtr, `translate(${width - 2 * padding} ,0)`, yAxis);
 		addAxisToDOM(svgPtr, `translate(0,${height - 2 * padding})`, xAxis);
 	};
+	let globalX = 0,
+		globalY = 40;
 
 	let svgPtr: SVGElement; // bound to the svg in the DOM as seen below
 	onMount(() => {
@@ -81,7 +83,9 @@
 		{height}
 		on:pointermove={(e) => {
 			const [x, y] = pointer(e, svgPtr);
-			position(revxScale(x), revyScale(y));
+			globalX = revxScale(x);
+			globalY = revyScale(y);
+			position(globalX, globalY);
 		}}
 		style="border: 3px solid {latentColor};"
 	>
@@ -105,6 +109,14 @@
 				stroke-width={strokeWidth}
 			/>
 		{/each}
+		<circle
+			cx={xScale(globalX)}
+			cy={yScale(globalY)}
+			r={10}
+			fill="none"
+			stroke="orange"
+			stroke-width={2}
+		/>
 	</svg>
 </div>
 <div style="margin-top: 20px;">

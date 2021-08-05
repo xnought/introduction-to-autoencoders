@@ -3,7 +3,6 @@
 	import { getData } from "./app";
 	import Tool from "./components/tool/Tool.svelte";
 
-	let websiteName: string = "Autoencoder Lab";
 	const datasetNames = ["circle", "sin", "spiral", "twistedcubic"];
 	let datasets: any[] = [];
 	let loaded = false;
@@ -16,14 +15,9 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{websiteName}</title>
-</svelte:head>
 <div id="main-tool">
 	{#if loaded}
 		<Tool {datasets} {datasetNames} />
-	{:else}
-		<h1>Loading</h1>
 	{/if}
 </div>
 
@@ -37,6 +31,6 @@
 		// position: relative;
 		// height: 800px;
 		// border: 1px solid black;
-		border-top: 1px solid rgba(0, 0, 0, 0.1);
+		// border-top: 1px solid rgba(0, 0, 0, 0.1);
 	}
 </style>

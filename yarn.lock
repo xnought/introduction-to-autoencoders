@@ -512,13 +512,6 @@ callsites@^3.0.0:
   resolved "https://registry.yarnpkg.com/callsites/-/callsites-3.1.0.tgz#b3630abd8943432f54b3f0519238e33cd7df2f73"
   integrity sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==
 
-camerahelperscattergl@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/camerahelperscattergl/-/camerahelperscattergl-0.0.4.tgz#b68ef4d8578e118f4772c9e1325b7ee35e5330c2"
-  integrity sha512-Tn7Uqam4MRk4b+5WFOIyCeJInZYxOGZYwhPil7EMrE3kvotyB5jNJGcfsYPJ+SPw99XK3FZFNHSWZ5VWgU3YTw==
-  dependencies:
-    three "^0.130.1"
-
 chalk@^2.0.0:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
@@ -1472,11 +1465,6 @@ terser@^5.0.0:
     commander "^2.20.0"
     source-map "~0.7.2"
     source-map-support "~0.5.19"
-
-three@^0.130.1:
-  version "0.130.1"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.130.1.tgz#797588b2877ace31603bbbc864eb2e3022f0b3b4"
-  integrity sha512-OSPPKcGvFSiGkG3jFrwwC76PBV/ZSrGxpBbg28bW8s9GU8r/y2spNGtEXHEb/CVqo0Ctf5Lx2rVaxQZB6OasaA==
 
 tinydate@^1.0.0:
   version "1.3.0"
