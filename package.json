@@ -1,12 +1,14 @@
 {
-  "name": "svelte-app",
+  "name": "introduction-to-autoencoders",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d public"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
@@ -14,6 +16,7 @@
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",
     "@types/d3": "^7.0.0",
+    "gh-pages": "^3.2.3",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.0",
@@ -28,6 +31,8 @@
   "dependencies": {
     "@tensorflow/tfjs": "^3.8.0",
     "d3": "^7.0.0",
+    "node-sass": "^6.0.1",
+    "sass": "^1.37.5",
     "sirv-cli": "^1.0.0"
   }
 }
