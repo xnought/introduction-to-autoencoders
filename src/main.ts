@@ -1,11 +1,36 @@
-import App from "./App.svelte";
-import Test from "./Test.svelte";
+import Main from "./main/App.svelte";
+import MNIST from "./MNIST/App.svelte";
+import Encoder from "./diagrams/DataLoader.svelte";
+import Decoder from "./diagrams/DataLoader.svelte";
+import Latent from "./diagrams/DataLoader.svelte";
+import LatentGradExample from "./diagrams/latentGradExample.svelte";
 
-const app = new App({
+const main = new Main({
 	target: document.getElementById("main"),
 });
-const test = new Test({
-	target: document.getElementById("test"),
+const mnist = new MNIST({
+	target: document.getElementById("mnist"),
+});
+const encoder = new Encoder({
+	target: document.getElementById("encoderDiagram"),
+	props: {
+		diagramPicker: "encoder",
+	},
+});
+const decoder = new Decoder({
+	target: document.getElementById("decoderDiagram"),
+	props: {
+		diagramPicker: "decoder",
+	},
+});
+const latent = new Latent({
+	target: document.getElementById("latentDiagram"),
+	props: {
+		diagramPicker: "latent",
+	},
+});
+const latentGradExample = new LatentGradExample({
+	target: document.getElementById("latentGradDiagram"),
 });
 
-export default app;
+export default main;

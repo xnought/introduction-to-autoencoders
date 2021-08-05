@@ -1,30 +1,28 @@
 <script lang="ts">
-	import {
-		onMount,
-		afterUpdate,
-		createEventDispatcher,
-		beforeUpdate,
-	} from "svelte";
+	import { onMount, createEventDispatcher } from "svelte";
 	import { schemeCategory10 } from "d3";
 	export let data3D;
-	import { ScatterGL } from "camerahelperscattergl";
+	// import { ScatterGL } from "camerahelperscattergl";
+	interface IpointConfig {
+		scaleDefault?: number;
+		scaleHover?: number;
+		colorHover?: string;
+	}
 
 	// config
-	export let colors = schemeCategory10.slice(0, 2);
-	export let lenData = 156;
+	export let pointConfig: IpointConfig;
 	export let width = "250px";
 	export let height = "250px";
-	export let zoom = 0.9;
-	export let scaleDefault = 1;
-	export let axesVisible = true;
+	export let zoom = 0.6;
+	export let axesVisible = false;
 	export let style = "";
 	export let isOrbiting = false;
+	export let colorIndices: string[];
+	export let orbitOnStart = false;
 
 	const dispatch = createEventDispatcher();
 	let container: HTMLElement;
 	let scatterGL;
-	// export let colorIndices;
-	export let title = "";
 	export let hoveredPointIndex = -1;
 
 	function handleMouseout() {
@@ -46,19 +44,16 @@
 			camera: { zoom, position: pos },
 			styles: {
 				fog: { enabled: false },
-				point: {
-					scaleDefault,
-					scaleHover: 3.5,
-					colorHover: "rgba(0,0,0,1)",
-				},
+				point: pointConfig,
+				// point: {
+				// 	scaleDefault,
+				// 	scaleHover: 1.5,
+				// 	colorHover: "rgba(0,0,0,0.2)",
+				// },
 				axesVisible,
 			},
 			selectEnabled: false,
-			rotateOnStart: false,
-			onCameraDrag: (pos, target) => {
-				dispatch("drag", { position: pos });
-				if (isOrbiting) isOrbiting = false;
-			},
+			rotateOnStart: orbitOnStart,
 			onHover: (d) => {
 				if (d === null || d === hoveredPointIndex) return;
 				dispatch("hover", d);
@@ -66,14 +61,14 @@
 		});
 		window["scatterGLObj"] = scatterGL;
 		scatterGL.setPointColorer((i) => {
-			// const colorIndex = colorIndices[i];
-			return i < lenData ? colors[0] : colors[1];
+			const colorIndex = colorIndices[i];
+			return colorIndex;
 		});
 		//@ts-ignore
 		scatterGL.render(dataset);
 		mounted = true;
 	});
-	const origin: [number, number, number] = [0, 0, 0];
+	// const origin: [number, number, number] = [0, 0, 0];
 	$: {
 		if (mounted) {
 			const dataset = {
@@ -81,16 +76,15 @@
 				points: data3D,
 				metadata: [],
 			};
-			//@ts-expect-error
 			scatterGL.updateDataset(dataset);
 			scatterGL.setHoverPointIndex(hoveredPointIndex);
 		}
 	}
-	$: {
-		if (mounted) {
-			scatterGL.setCameraPositionAndTarget(pos, origin);
-		}
-	}
+	// $: {
+	// 	if (mounted) {
+	// 		scatterGL.setCameraPositionAndTarget(pos, origin);
+	// 	}
+	// }
 	// afterUpdate(() => {
 	// 	const dataset = {
 	// 		dimensions: 3,
@@ -108,51 +102,19 @@
 	on:mouseout={handleMouseout}
 	style="width: {width}; height: {height};{style}"
 >
-	<!-- {#if title}
-		<div class="title">{title}</div>
-	{/if} -->
 	<div class="scatter-gl-container" bind:this={container} />
-	<!-- {#if !isOrbiting}
-		<div class="orbit" on:click={toggleOrbit}>
-			<i class="material-icons">3d_rotation</i>
-		</div>
-	{/if} -->
 </div>
 
-<style>
+<style lang="scss">
 	.container {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		box-sizing: border-box;
-		/* margin-bottom: 20px; */
 		position: relative;
 	}
 	.scatter-gl-container {
 		width: 100%;
 		min-height: 100%;
-	}
-	/* @media only screen and (max-width: 800px) {
-		.container {
-			width: 100%;
-			margin-bottom: 0;
-		}
-		.scatter-gl-container {
-			min-height: 300px;
-		}
-	} */
-	.title {
-		text-align: center;
-		width: 100%;
-		font-weight: bold;
-	}
-	.orbit {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		cursor: pointer;
-	}
-	.orbit:hover {
-		color: #333;
 	}
 </style>
