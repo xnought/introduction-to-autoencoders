@@ -3,20 +3,12 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
-
-		<title>Introduction to Autoencoders</title>
-
 		<meta
-			property="og:title"
-			content="An Interactive Introduction to Autoencoders"
-		/>
-		<meta
-			property="og:description"
+			name="description"
 			content="Learn the basic structure of autoencoders through training an autoencoder in the browser and with other interactive explanations."
 		/>
-		<meta property="og:url" content="http://localhost:5000/" />
-		<meta property="og:image" content="favicon.ico" />
-		<meta name="twitter:card" content="model.png" />
+
+		<title>Introduction to Autoencoders</title>
 
 		<link rel="icon" type="image/ico" href="/favicon.ico" />
 		<link rel="stylesheet" href="/styles.css" />
@@ -30,46 +22,6 @@
 			href="https://fonts.googleapis.com/icon?family=Material+Icons"
 			rel="stylesheet"
 		/>
-		<style>
-			:root {
-				--encoderStroke: hsla(194, 91%, 45%, 1);
-				--decoderStroke: hsla(29, 100%, 55%, 1);
-				--encoderFill: hsla(194, 81%, 62%, 0.851);
-				--decoderFill: hsla(29, 95%, 64%, 0.702);
-				--latentFill: hsla(122, 51%, 70%, 1);
-			}
-			.decoderStroke {
-				color: var(--decoderStroke);
-			}
-			.decoderFill {
-				color: var(--decoderFill);
-			}
-			.encoderFill {
-				color: var(--encoderFill);
-			}
-			.encoderStroke {
-				color: var(--encoderStroke);
-			}
-			.latentColor {
-				color: var(--latentFill);
-			}
-			.under-line {
-				border-bottom-width: 1px;
-				border-bottom-style: solid;
-				padding-bottom: 1rem;
-			}
-
-			.under-line.encoder {
-				border-bottom-color: var(--encoderFill);
-			}
-
-			.under-line.latent {
-				border-bottom-color: var(--latentFill);
-			}
-			.under-line.decoder {
-				border-bottom-color: var(--decoderFill);
-			}
-		</style>
 		<script defer src="/build/bundle.js"></script>
 	</head>
 
@@ -84,53 +36,42 @@
 							"affiliation": "Oregon State University",
 							"affiliationURL": "https://www.oregonstate.edu/"
 						}
-					],
-					"katex": {
-						"delimiters": [
-							{
-								"left": "$",
-								"right": "$",
-								"display": false
-							},
-							{
-								"left": "$$",
-								"right": "$$",
-								"display": true
-							}
-						]
-					}
+					]
 				}
 			</script>
 		</d-front-matter>
 
+		<!-- TITLE + DESCRIPTION -->
 		<d-title>
 			<h1>An Interactive Introduction to Autoencoders</h1>
-			<p>
-				<b>Below</b>, train an autoencoder right in your browser, then
-				read the interactive explanation.
-			</p>
+			<p>Learn autoencoders by training one right in your browser!</p>
 		</d-title>
+
+		<!-- MAIN TOOL / VISUALIZATION -->
 		<div id="main"></div>
+
+		<!-- NAME AND AFFILIATION -->
 		<d-byline></d-byline>
 
+		<!-- THE ARTICLE PORTION USING DISTILL TEMPLATE -->
 		<d-article>
-			<div>
-				<p id="introduction"></p>
-			</div>
-			<p>
+			<!-- INTRODUCE THE TOPIC HERE -->
+			<p id="intro">
 				Autoencoders have many different applications, but most notably
-				they have been used as generative models and for dimensionality
-				reduction. Although autoencoders are used to learn complex
-				representations, the architecture is actually
-				<b> very simple</b>! Autoencoders just <i>deconstruct</i> down,
-				then learn to <i>reconstruct</i> back up.
+				they have been used for dimensionality reduction and as
+				generative models
+				<d-cite key="baldi1989neural, baldi2012autoencoders"></d-cite>.
+				Even though autoencoders are used to learn complex
+				representations, the neural network architecture itself is
+				<b> very simple</b>! Autoencoders just learn to
+				<i>deconstruct</i> down, then learn to <i>reconstruct</i> back
+				up.
 			</p>
-
 			<p>
 				The rest of the article will dive into the
 				<a href="#structure">Structure</a> of an autoencoder in context
-				to the <a class="figure-number-text" href="#main">1</a> and will
-				be broken up into
+				to <a class="figure-number-text" href="#main">1</a>. More
+				specifically, it will be broken up into the
 				<a style="color: var(--encoderFill)" href="#encoder">
 					<img src="encoder.svg" width="10px" /> Encoder</a
 				>,
@@ -140,10 +81,11 @@
 				<a style="color: var(--decoderFill)" href="#decoder"
 					>Decoder <img src="decoder.svg" width="10px"
 				/></a>
-				to explain each piece of the puzzle. Then, will conclude with a
-				glimpse into an application of an autoencoder trained on
-				<a href="#digits">MNIST Digits</a>.
+				to explain each piece of the puzzle. Then, the article will end
+				with a <a href="#conclusion">Conclusion</a> that extends to
+				applications of autoencoders elsewhere.
 			</p>
+
 			<h2 id="structure">Structure</h2>
 
 			<!-- ENCODER SECTION -->
@@ -167,7 +109,7 @@
 				></d-cite
 				>. Hence, the design of the
 				<span class="encoderFill">Encoder</span> from
-				<a class="figure-number-text" href="#main">1</a> is a
+				<a class="figure-number-text" href="#main">1</a>
 				<img src="encoder.svg" width="10px" /> trapezoid , starting with
 				a larger base, moving to a smaller one: going from 3
 				Dimensional(<code>3D</code>) to 2 Dimensional(<code>2D</code>)
@@ -208,8 +150,8 @@
 				outputs would constitute a
 				<span class="latentColor">Latent Space</span>. Among being able
 				to do vector arithmetic to find connections and combinations,
-				the visualization of this space and the structure it forms,
-				returns a huge amount of intuition.
+				visualizing this space gives insight to the structure of the
+				data.
 			</p>
 			<p>
 				One way to visualize the structure that forms is through
@@ -340,7 +282,8 @@
 				direction each point in the
 				<span class="latentColor">Latent Space</span>
 				is tending towards, we can get an idea of where the training is
-				headed towards <d-cite key="kahng2018gan"></d-cite>.
+				headed towards
+				<d-cite key="kahng2018gan, kahng2018ganpaper"></d-cite>.
 				<d-figure id="latentGradDiagram"> </d-figure>
 			</p>
 			<p>
@@ -359,16 +302,19 @@
 						\text{latent}_1}</d-math
 					>. </d-footnote
 				>, we now have direction of steepest ascent to
-				<b>increase</b> loss. Then, to get the direction of steepest
-				descent, we negate<d-footnote>
+				<b>increase</b> loss. Then, since the goal is to lower loss, we
+				negate<d-footnote>
 					The negation of the Gradient is where the term
-					<b>Opposite</b> of <b>Opposite</b> Gradient refers
+					<b>Opposite</b> of "<b>Opposite</b> Gradient" refers
 					to.</d-footnote
 				>
 				the direction to <b>decrease</b> loss. In
 				<a class="figure-number-text" href="#latentGradDiagram">3</a>,
 				the point has a trail that represents the Opposite Gradient:
-				what direction the point needs to move to lower loss.
+				what direction the point needs to move to lower loss<d-cite
+					key="kahng2018gan, kahng2018ganpaper"
+				></d-cite
+				>.
 			</p>
 			<p>
 				<d-figure id="latentDiagram"> </d-figure>
@@ -384,27 +330,30 @@
 				<img src="trail.svg" alt="trail" />, you can see the structure
 				that takes place over training. This method of visualization can
 				be applied to other outputs, demonstrated by
-				<code>Minsuk Kahng et al.</code> in
+				<code>Kahng et al.</code> in
 				<a href="https://poloclub.github.io/ganlab/">GAN Lab</a
-				><d-cite key="kahng2018gan"></d-cite>. And specifically by
-				applying it to the
-				<span class="latentColor">2D Latent Space</span> in
-				<a class="figure-number-text" href="#latentDiagram">4</a>, adds
-				an enormous amount of intuition for whats going to form.
+				><d-cite key="kahng2018gan"></d-cite>. By specifically applying
+				it to the <span class="latentColor">2D Latent Space</span> in
+				<a class="figure-number-text" href="#latentDiagram">4</a>, it
+				becomes much easier to see where the points want to move and
+				understand the underlying structure.
 			</p>
+
+			<!-- DECODER SECTION -->
 			<h3 class="under-line decoder" id="decoder">Decoder</h3>
 			<p>
-				After the <span class="encoderFill">Encoder</span> deconstructs
+				After the <span class="encoderFill">Encoder</span>
+				<b>deconstructs</b>
 				the original input down to the
 				<span class="latentColor">Latent Space</span>, the
 				<span class="decoderFill">Decoder</span>
 				<b>reconstructs</b> back up to the original input. Hence the
-				outward <img src="decoder.svg" width="10px" /> trapezoid for the
+				<img src="decoder.svg" width="10px" /> trapezoid for the
 				<span class="decoderFill">Decoder</span> design, starting with a
 				smaller base, moving to a larger one. The loss function,
 				adequately named "reconstruction loss," is computed with the
 				original input and the reconstructed input. Now we can
-				backpropagate the reconstruction loss and optimize! All the
+				backpropagate from the reconstruction loss and optimize! All the
 				pieces are now present to train the autoencoder.
 			</p>
 			<p>
@@ -429,27 +378,30 @@
 				the <span class="latentColor">2D Latent Space</span> if we added
 				a dimension.
 			</p>
-			<h2 id="digits">Digits Example</h2>
+
+			<!-- AN EXAMPLE WITH DIGITS -->
+			<h2 id="conclusion">Conclusion</h2>
 			<p>
 				Autoencoders are not just fixed to <code>3D</code> data like the
-				previous examples – they can be used on other examples too!
+				previous examples. They can be used on other examples too!
 			</p>
 			<p>
-				In fact, autoencoders have widespread use solving many problems
-				due to their success with dimensionality reduction, generation,
-				and importantly their simple architecture.
+				In fact, in addition to being applied to many different shapes
+				and sizes of data, the autoencoder structure can be used to
+				tackle real problems like denoising images, removing
+				imperfections or watermarks from images, learning complex or
+				emergent structures in data, and many more
+				<d-cite
+					key="xie2012image, hashisho2019underwater, cisneros2021visualizing"
+				></d-cite
+				>.
 			</p>
 			<p>
-				Although simple, autoencoders can be used everywhere! For
-				example, with the
-				<code>MNIST</code> digits dataset, people often try to create a
-				model to predict the correct digit (0-9) based on
-				<code>28 by 28</code> handwritten digit.
-			</p>
-			<p>
-				To help visualize the dataset better, we can train an
-				autoencoder to take in the input and reduce down to a bottleneck
-				of <code>2D</code>, then reconstruct back up.
+				To give one final example, if we wanted to visualize the
+				structure of the
+				<code>MNIST</code> digits dataset that consists of
+				<code>28 by 28</code> handwritten digits (0-9), we could use an
+				autoencoder!
 			</p>
 			<p>
 				<d-figure id="mnist"> </d-figure>
@@ -462,10 +414,10 @@
 			</p>
 
 			<p>
-				In <a class="figure-number-text" href="#mnist">6</a>, In
-				addition to seeing the test data clustered in <code>2D</code>,
-				we can interpolate over the latent space to see what the model
-				learned!
+				In <a class="figure-number-text" href="#mnist">6</a>. after
+				training the autoencoder with a <code>2D</code> bottleneck, we
+				can see clusters form in the
+				<span class="latentColor">Latent Space</span>!
 			</p>
 
 			<div class="hidden-citations">
@@ -500,17 +452,23 @@
 				<a href="https://github.com/distillpub/template"
 					>Distill HTML Template</a
 				>.
+			</p>
+			<p>
+				<a href="https://pair-code.github.io/understanding-umap/"
+					>Understanding UMAP</a
+				>,
 				<a
 					href="https://distill.pub/2020/communicating-with-interactive-articles/"
 					>Communicating with Interactive Articles</a
-				>
-				by <code>Hohman, et al.</code> was used as a reference for what
-				works well.
+				>, and
+				<a href="https://poloclub.github.io/ganlab/">GAN Lab</a>
+				were used for a css styling reference for the article and
+				controls.
 			</p>
 			<p>
 				<b>Libraries used: </b>Plotting and visualization done in
 				<a href="https://svelte.dev/">Svelte</a>, with help of
-				<a href="https://d3js.org/">d3.js</a>, and
+				<a href="https://d3js.org/">d3.js</a> and
 				<a href="https://github.com/PAIR-code/scatter-gl">ScatterGL</a>.
 				Autoencoder created and trained with
 				<a href="https://www.tensorflow.org/js">Tensorflow JS</a>.
@@ -519,9 +477,8 @@
 			<h3>Author Contributions</h3>
 			<p>
 				<a href="https://www.donnybertucci.com/">Donald R Bertucci</a>
-				implemented all of the visualizations and wrote the article
-				during the summer after his first year undergrad. at Oregon
-				State University.
+				is an undergraduate student at Oregon State university who
+				implemented all of the visualizations and wrote the article.
 			</p>
 
 			<d-footnote-list></d-footnote-list>
