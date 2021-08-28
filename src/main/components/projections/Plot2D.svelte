@@ -85,7 +85,7 @@
 				fill={hoverPointIndex !== index
 					? colorIndices[index]
 					: "rgba(0,0,0, 0.3)"}
-				stroke="black"
+				stroke="gray"
 				stroke-width={0.1}
 			/>
 		{/each}

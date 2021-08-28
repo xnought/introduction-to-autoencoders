@@ -95,7 +95,7 @@
 			data2D={latent}
 			width={81}
 			height={81}
-			radius={1}
+			radius={2}
 			min={minLatent}
 			max={maxLatent}
 			colorIndices={outputColors}

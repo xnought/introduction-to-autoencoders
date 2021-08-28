@@ -50,11 +50,16 @@
 		const polygon = `${pointA[0]}, ${pointA[1]} ${pointB[0]}, ${pointB[1]} ${pointC[0]}, ${pointC[1]}`;
 		return polygon;
 	}
+	function same(arr1: Point2D, arr2: Point2D) {
+		return arr1[0] == arr2[0] && arr1[1] == arr2[1];
+	}
 	let points = "";
 	$: {
 		const pointToScale: Point2D = toScale(point);
 		const gradToScale: Point2D = toScale(grad);
-		points = computeTriangle(pointToScale, gradToScale);
+		points = same(pointToScale, gradToScale)
+			? ""
+			: computeTriangle(pointToScale, gradToScale);
 	}
 </script>
 
