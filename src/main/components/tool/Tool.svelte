@@ -378,14 +378,6 @@
 	let globalHover = -1;
 </script>
 
-<!-- <div>Epoch={epoch}, Loss={printLoss}</div>
-<button on:click={async () => await play()}>Play</button>
-<button on:click={() => pause()}>Pause</button>
-<button on:click={() => reset()}>Reset</button>
-<button on:click={() => (tensors = tf.memory().numTensors)}
-	>Num Tensors={tensors}</button
-> -->
-
 <div class="container">
 	<div id="model-view">
 		<div style="margin-bottom: 60px;">
@@ -708,10 +700,6 @@
 		#graphs {
 			#latent-grads {
 				margin-top: 25px;
-				// width: 300px;
-				// height: 300px;
-				// background: lightgrey;
-				// border: 1px black solid;
 			}
 		}
 	}
@@ -720,9 +708,4 @@
 		font-size: 20px;
 		font-weight: 500;
 	}
-	// .data-menu {
-	// 	display: flex;
-	// 	width: 200px;
-	// 	// margin-left: 5%;
-	// }
 </style>

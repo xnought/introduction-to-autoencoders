@@ -1,3 +1,6 @@
+html {
+	scroll-behavior: smooth;
+}
 :root {
 	--encoderStroke: hsla(194, 91%, 45%, 1);
 	--decoderStroke: hsla(29, 100%, 55%, 1);
