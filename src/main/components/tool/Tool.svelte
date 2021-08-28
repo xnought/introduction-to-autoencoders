@@ -688,14 +688,13 @@
 		-moz-user-select: none;
 		-ms-user-select: none;
 
-		#model {
-		}
 		.divider {
 			margin-right: 40px;
 			margin-left: 20px;
 			width: 1px;
 			height: 800px;
 			background-color: $divider-color;
+			z-index: 1;
 		}
 		#graphs {
 			#latent-grads {
@@ -707,5 +706,29 @@
 		display: inline;
 		font-size: 20px;
 		font-weight: 500;
+	}
+
+	@media (max-width: 1200px) {
+		.container {
+			flex-direction: column;
+
+			.divider {
+				width: 100%;
+				height: 1px;
+				margin: 20px 0;
+			}
+		}
+		#model-view {
+			margin: 50px 0;
+		}
+		#graphs {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 20px;
+			#latent-grads {
+				margin-left: 20px;
+			}
+		}
 	}
 </style>
