@@ -157,7 +157,6 @@
 	let lr: number = 0.01;
 	let activation: ActivationIdentifier = "tanh";
 	let epoch: number = 0;
-	let maxLoss = 0;
 
 	// output items
 	let preds: Point3D[] = [];
@@ -217,9 +216,6 @@
 				// run every 100 because computationally expensive
 				const outputLoss = oneEpoch();
 				printLoss = getScalar(outputLoss);
-				if (printLoss > maxLoss) {
-					maxLoss = printLoss;
-				}
 				getOuputs();
 				if (epoch % 50 == 0) {
 					grads = computeLatentGrads();
@@ -238,8 +234,6 @@
 		playing = false;
 	}
 	function reset() {
-		isRunning = false;
-		maxLoss = 0;
 		model.dispose();
 		model = new Autoencoder(activation, encoderNeurons, decoderNeurons);
 		preds = [];
@@ -405,19 +399,13 @@
 						image="prev/{datasetNames[i]}.png"
 						onClick={() => {
 							selectedDatasetIndex = i;
+							isRunning = false;
+							pause();
 							reset();
 							setDataset(selectedDatasetIndex);
 						}}
 						selected={selectedDatasetIndex == i}
 					/>
-					<!-- <div
-						class="dataset"
-						on:click={() => {
-							dataset = [...ds];
-						}}
-					>
-						{i}
-					</div> -->
 				{/each}
 			</div>
 			<div id="controls">
