@@ -8,48 +8,53 @@
 	let point: Point2D = [150, 150];
 	let grad: Point2D = initGrad;
 
-	function toPolyString(points: number[][]) {
-		let pointsStr = "";
-		for (const point of points) {
-			pointsStr += point.toString() + " ";
-		}
-		return pointsStr;
+	function getDegreeFromCartesian([x, y]: Point2D): number {
+		return Math.atan(y / x);
 	}
-	function dist(point1: Point2D, point2: Point2D) {
-		return Math.sqrt(
-			(point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
-		);
+	function toCartesian([r, theta]: Point2D): Point2D {
+		const x = r * Math.cos(theta);
+		const y = r * Math.sin(theta);
+		return [x, y];
 	}
-	function equidistant(point: Point2D, radius: number) {
-		let additional: Point2D[] = [
-			[point[0] + radius, point[1] + radius],
-			[point[0] - radius, point[1] - radius],
-			[point[0] + radius, point[1] - radius],
-			[point[0] - radius, point[1] + radius],
-		];
-		let distances = additional.map((point, index) => ({
-			index,
-			distance: dist(point, grad),
-		}));
-		let sortedDistances = distances.sort((a, b) => a.distance - b.distance);
-		if (point[0] == grad[0] || point[1] == grad[1]) {
-			return [
-				additional[sortedDistances[0].index],
-				additional[sortedDistances[1].index],
-			];
-		}
+	function translate(
+		[x, y]: Point2D,
+		[translateX, translateY]: Point2D
+	): Point2D {
+		return [x + translateX, y + translateY];
+	}
+	const deg90toRads = Math.PI / 2;
+	function polarConversion(point: Point2D, grad: Point2D, radius: number) {
+		const translateTo: Point2D = [-point[0], -point[1]]; // copy by value with neg
+		const translateBack: Point2D = [point[0], point[1]]; // copy by value
+
+		// center at origin
+		// const pointTranslated = translate(point, translateTo);
+		const gradTranslated = translate(grad, translateTo);
+
+		// first need the theta from gradTranslated
+		const theta = getDegreeFromCartesian(gradTranslated);
+
+		const pointB = toCartesian([radius, theta - deg90toRads]);
+		const pointC = toCartesian([radius, theta + deg90toRads]);
+
 		return [
-			additional[sortedDistances[1].index],
-			additional[sortedDistances[2].index],
+			translate(pointB, translateBack),
+			translate(pointC, translateBack),
 		];
 	}
-	let equi;
-	let svg: SVGElement;
-	let stringqui;
-	$: {
-		equi = equidistant(point, 10);
-		stringqui = toPolyString(equi) + grad.toString();
+	function computeTriangle(point: Point2D, grad: Point2D) {
+		const pointA = grad;
+		const [pointB, pointC] = polarConversion(point, grad, 12);
+
+		const polygon = `${pointA[0]}, ${pointA[1]} ${pointB[0]}, ${pointB[1]} ${pointC[0]}, ${pointC[1]}`;
+		return polygon;
 	}
+	let svg: SVGElement;
+	$: polygonPoints = computeTriangle(point, grad);
+
+	const primary = "#9F0142";
+	const secondary = "#B2304D";
+	const radius = 20;
 </script>
 
 <div class="container">
@@ -63,15 +68,15 @@
 				grad = [x, y];
 			}}
 		>
-			<polygon points={stringqui} fill="#B2304D" />
-			<circle cx={point[0]} cy={point[1]} fill="#9F0142" r={20} />
+			<polygon points={polygonPoints} fill={secondary} />
+			<circle cx={point[0]} cy={point[1]} fill={primary} r={radius} />
 		</svg>
 	</div>
 </div>
 <figcaption>
 	<a class="figure-number-text" href="#latentGradDiagram">3</a>: Loss would
-	lower if the <span style="color: #9F0142;">point</span>
-	moved in the direction of the <span style="color: #B2304D;">trail</span>
+	lower if the <span style="color: {primary};">point</span>
+	moved in the direction of the <span style="color: {secondary};">trail</span>
 	<img src="trail.svg" alt="trail" />
 	<code>({grad[0].toFixed(0)}, {grad[1].toFixed(0)})</code>
 </figcaption>

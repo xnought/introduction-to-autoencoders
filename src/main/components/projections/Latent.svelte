@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Triangle from "./Triangle.svelte";
-	import * as d3 from "d3";
+	import { scaleLinear, color as d3color } from "d3";
 	import { onMount } from "svelte";
 
 	/* Put stuff here */
@@ -23,19 +23,17 @@
 		[0.5, 0.2],
 	];
 
-	let xScale = d3.scaleLinear().domain([-2, 2]).range([0, width]);
-	let yScale = d3.scaleLinear().domain([-2, 2]).range([height, 0]);
+	let xScale = scaleLinear().domain([-2, 2]).range([0, width]);
+	let yScale = scaleLinear().domain([-2, 2]).range([height, 0]);
 
 	$: {
 		updateAxes(min, max);
 	}
 	function updateAxes(min: Point2D, max: Point2D) {
-		xScale = d3
-			.scaleLinear()
+		xScale = scaleLinear()
 			.domain([min[0] - padding, max[0] + padding])
 			.range([0, width]);
-		yScale = d3
-			.scaleLinear()
+		yScale = scaleLinear()
 			.domain([min[1] - padding, max[1] + padding])
 			.range([height, 0]);
 	}
@@ -56,13 +54,16 @@
 			grad={grads[index]}
 			{xScale}
 			{yScale}
-			color={d3.color(colorIndices[index]).brighter(0.2)}
+			color={d3color(colorIndices[index]).brighter(0.2)}
+			stroke={d3color(colorIndices[index]).darker(1.1)}
 		/>
 		<circle
 			cx={xScale(point[0])}
 			cy={yScale(point[1])}
 			r={3}
 			fill={colorIndices[index]}
+			stroke={d3color(colorIndices[index]).darker(1.1)}
+			stroke-width={0.2}
 		/>
 	{/each}
 </svg>

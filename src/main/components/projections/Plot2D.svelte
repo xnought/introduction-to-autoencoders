@@ -85,6 +85,8 @@
 				fill={hoverPointIndex !== index
 					? colorIndices[index]
 					: "rgba(0,0,0, 0.3)"}
+				stroke="gray"
+				stroke-width={0.1}
 			/>
 		{/each}
 	</svg>
