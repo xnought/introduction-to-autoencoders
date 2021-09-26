@@ -3,7 +3,7 @@
 	import { getData } from "./app";
 	import Tool from "./components/tool/Tool.svelte";
 
-	const datasetNames = ["circle", "sin", "spiral", "twistedcubic"];
+	const datasetNames = ["circle", "roller", "twistedcubic", "sin"];
 	let datasets: any[] = [];
 	let loaded = false;
 	onMount(async () => {
