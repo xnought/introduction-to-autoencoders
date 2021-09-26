@@ -341,9 +341,16 @@
 			<p>
 				Just by observing the trails
 				<img src="trail.svg" alt="trail" />, you can see the structure
-				that takes place over training. This method of visualization can
-				be applied to other outputs, demonstrated by
-				<code>Kahng et al.</code> in
+				that takes place over training. Notice how each point doesn't
+				move exactly in the direction of it's trail
+				<img src="trail.svg" alt="trail" />, it is more of an indicator
+				of the gravity of the structure: larger and more trails
+				<img src="trail.svg" alt="trail" /> will pull the data in that
+				direction, and uniformly distributed trails
+				<img src="trail.svg" alt="trail" />
+				will not affect the structure at all. This method of
+				visualization can be applied to other outputs, demonstrated by
+				<code>Kahng <i>et al.</i></code> in
 				<a href="https://poloclub.github.io/ganlab/">GAN Lab</a
 				><d-cite key="kahng2018gan"></d-cite>. By specifically applying
 				it to the <span class="latentColor">2D Latent Space</span> in
@@ -430,7 +437,12 @@
 				In <a class="figure-number-text" href="#mnist">6</a>. after
 				training the autoencoder with a <code>2D</code> bottleneck, we
 				can see clusters form in the
-				<span class="latentColor">Latent Space</span>!
+				<span class="latentColor">Latent Space</span>! Also notice the
+				similarity between the digits! See how the
+				<span style="color: #16bece">9</span>s are seen mixed in with
+				the <span style="color: #7f7f7f">7</span>s and
+				<span style="color: #9467bd">4</span>s in the
+				<span class="latentColor">Latent Space</span>.
 			</p>
 
 			<div class="hidden-citations">
