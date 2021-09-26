@@ -127,4 +127,7 @@
 		font-size: 20px;
 		font-weight: 500;
 	}
+	d-slider {
+		cursor: pointer;
+	}
 </style>
